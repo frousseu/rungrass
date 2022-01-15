@@ -6,9 +6,9 @@ library(readxl)
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
 
-d<-as.data.frame(read_excel("C:/Users/God/Documents/reunion_graminoids/grasses.xlsx"))
+d<-as.data.frame(read_excel("C:/Users/God/Documents/rungrass/grasses.xlsx"))
 #dcsv<-read.csv("https://raw.githubusercontent.com/frousseu/reunion_graminoids/main/grasses.csv",sep=";")
-dcsv<-read.csv("C:/Users/God/Documents/reunion_graminoids/grasses.csv",sep=";",na.strings=c("NA",""))
+dcsv<-read.csv("C:/Users/God/Documents/rungrass/grasses.csv",sep=";",na.strings=c("NA",""))
 
 d$photo<-gsub("/medium.|/small.","/large.",d$photo)
 
@@ -40,7 +40,7 @@ for(i in w){ # looping is better cause sometimes it times-out
 
 d$attribution[which(is.na(d$attribution))]<-d$credit[which(is.na(d$attribution))]
 
-write.table(d,"C:/Users/God/Documents/reunion_graminoids/grasses.csv",row.names=FALSE,sep=";",na="")
+write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=";",na="")
 
 
 d$flore<-ifelse(is.na(d$flore),"-",d$flore)
