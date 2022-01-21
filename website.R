@@ -53,8 +53,17 @@ d$genus<-sapply(strsplit(d$sp," "),"[",1)
 d<-d[order(factor(d$family,levels=c("Poaceae","Cyperaceae","Juncaceae","Excluded")),d$sp,d$rank),]
 
 genus<-function(i){
-  sp<-sort(unique(sapply(strsplit(d$sp[d$family!="Excluded"]," "),"[",1)))  
-  paste(paste0("<a href=\"#",sp,"\">",sp,"</a>"),collapse="<br>")
+  #ge<-sort(unique(d$genus[d$family!="Excluded"]))  
+  l<-split(d[d$family!="Excluded",c("genus","sp")],d$genus[d$family!="Excluded"])
+  l<-lapply(l,function(x){
+    x<-unique(x)
+    ge<-x$genus[1]
+    sp<-sapply(strsplit(x$sp," "),"[",2)
+    ge<-c(ge,paste0("&nbsp;&nbsp;",sp))
+    paste(paste0("<a class=\"atoc\" href=\"#",ge,"\">",ge,"</a>"),collapse="<br>")
+  })
+  paste(l,collapse="<br>")
+  #paste(paste0("<a class=\"atoc\" href=\"#",ge,"\">",ge,"</a>"),collapse="<br>")
 }
 
 css<-function(i){
@@ -85,10 +94,15 @@ p {
 }
 a {
   text-decoration: none; /* no underline */
+  color: #ccc;
 }
 .a2 {
   text-decoration: none; /* no underline */
-  color: #ccc;
+  color: #CCC;
+}
+.atoc {
+  text-decoration: none; /* no underline */
+  color: #000;
 }
 .flore {
   color: #FFFFFF77;
@@ -102,8 +116,10 @@ a {
 }
 .species {
   width: 100%;
-  padding: 0px;
+  padding: 0px; 
   background: forestgreen;
+  /* background: #39AC39; */
+  border-radius: 10px;
 }
 .species:hover {
   opacity: 0.70;
@@ -255,7 +271,7 @@ width: 100%;
   </head>
   <body>
   <div class=\"species\">
-  <h1 style = \"color:#FFFFFFEE;font-size:40px;padding-left:10px;padding-top:5px;padding-bottom:5px;font-family:'Helvetica';\">Index photographique des poacées, cypéracées et juncacées de la Réunion</h1>
+  <h1 style = \"color:#FFFFFFEE;font-size:40px;padding-left:10px;padding-top:5px;padding-bottom:5px;font-family:'Helvetica';\">RUNGRASS<img style=\"height; 35px; width: 35px;\" src=\"test3.png\"><br>Index photographique des poacées, cypéracées et juncacées de la Réunion</h1>
   </div>
   <p style = \"color:black;font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
@@ -265,14 +281,14 @@ width: 100%;
 
 
 <div style=\"display:inline-block; width:100%;\">
-  <div class=\"sticky2\" style=\"width:13%; height: 700px; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
+  <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
   <div class=\"sticky\">
   <p class=\"p2\" style = \"color:#FFFFFFEE;font-size:30px;\">Genre</p>
   </div>
   <p style = \"color:black;font-size:17px;\">",genus(),"
   </p>
   </div>
-  <div style=\"width:86%; float: left; display: inline-block; padding-left: 0.5%;\">
+  <div style=\"width:85%; float: left; display: inline-block; padding-left: 0.5%;\">
 
 <div class=\"species\">
 <p class=\"p2\" style = \"color:#FFFFFFEE;font-size:30px; padding-top: 0px;\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN - CPIE Mascarin</span><span style=\"float:right;\">Famille</span>
@@ -287,7 +303,7 @@ species_header<-function(x,i){
  "<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\">
    <div id=\"",x$genus[i],"\" class=\"species\">
     <p class=\"p2\">
-      ",x$sp[i],"&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>"," <span style=\"float:right;\">",x$family[i],"</span>
+      ",x$sp[i],"&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","&nbsp;&nbsp;<img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"run2.png\"><span style=\"float:right;\">",x$family[i],"</span>
     </p>
    </div>  
   </a>
