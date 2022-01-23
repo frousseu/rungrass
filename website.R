@@ -59,8 +59,11 @@ genus<-function(i){
     x<-unique(x)
     ge<-x$genus[1]
     sp<-sapply(strsplit(x$sp," "),"[",2)
-    ge<-c(ge,paste0("&nbsp;&nbsp;",sp))
-    paste(paste0("<a class=\"atoc\" href=\"#",ge,"\">",ge,"</a>"),collapse="<br>")
+    ge<-c(ge,x$sp)
+    ge1<-ge
+    ge1[1]<-ge1[2]
+    ge2<-c(ge[1],paste0("&nbsp;&nbsp;",sp))
+    paste(paste0("<a class=\"atoc\" href=\"#",ge1,"\">",ge2,"</a>"),collapse="<br>")
   })
   paste(l,collapse="<br>")
   #paste(paste0("<a class=\"atoc\" href=\"#",ge,"\">",ge,"</a>"),collapse="<br>")
@@ -191,19 +194,21 @@ text-align: center;
 color: #ccc;
 padding: 10px 0;
 height: 25px;
+font-family: 'Roboto Mono';
 }
 
 /* Link of Modal Image */
 #link {
 margin: auto;
 display: block;
-width: 80%;
-max-width: 900px;
+width: 70%;
+max-width: 70%; /*700px*/
 text-align: center;
 color: #ccc;
 padding: 10px 0;
 margin-bottom: 50px;
 height: 25px;
+font-family: 'Roboto Mono';
 }
 
 div.sticky {
@@ -301,9 +306,9 @@ width: 100%;
 species_header<-function(x,i){
   cat(paste0(
  "<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\">
-   <div id=\"",x$genus[i],"\" class=\"species\">
+   <div id=\"",x$sp[i],"\" class=\"species\">
     <p class=\"p2\">
-      ",x$sp[i],"&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","&nbsp;&nbsp;<img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"run2.png\"><span style=\"float:right;\">",x$family[i],"</span>
+      ",x$sp[i],"&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span style=\"float:right;\"><a target=\"_blank\" href=\"",paste0("http://atlas.borbonica.re/espece/",x$taxref[i]),"\"><img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"run2.png\"></a>&nbsp;&nbsp;",x$family[i],"</span>
     </p>
    </div>  
   </a>
