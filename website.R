@@ -122,7 +122,7 @@ a {
   padding: 0px; 
   background: forestgreen;
   /* background: #39AC39; */
-  border-radius: 10px;
+  border-radius: 5px;
 }
 .species:hover {
   opacity: 0.70;
@@ -219,6 +219,7 @@ div.sticky {
     width: 100%;
   padding: 0px;
   background: forestgreen;
+  border-radius: 5px;
 }
 
 div.sticky2 {
@@ -275,7 +276,7 @@ width: 100%;
 </style>
   </head>
   <body>
-  <div class=\"species\">
+  <div class=\"species\" style=\"border-radius: 10px\">
   <h1 style = \"color:#FFFFFFEE;font-size:40px;padding-left:10px;padding-top:5px;padding-bottom:5px;font-family:'Helvetica';\">RUNGRASS<img style=\"height; 35px; width: 35px;\" src=\"test3.png\"><br>Index photographique des poacées, cypéracées et juncacées de la Réunion</h1>
   </div>
   <p style = \"color:black;font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
@@ -305,13 +306,11 @@ width: 100%;
   
 species_header<-function(x,i){
   cat(paste0(
- "<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\">
-   <div id=\"",x$sp[i],"\" class=\"species\">
-    <p class=\"p2\">
-      ",x$sp[i],"&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span style=\"float:right;\"><a target=\"_blank\" href=\"",paste0("http://atlas.borbonica.re/espece/",x$taxref[i]),"\"><img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"run2.png\"></a>&nbsp;&nbsp;",x$family[i],"</span>
+ "<div id=\"",x$sp[i],"\" class=\"species\">
+    <p class=\"p2\"><a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\"><span class=\"p2\">
+      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","</a><span style=\"float:right;\"><a target=\"_blank\" href=\"",paste0("http://atlas.borbonica.re/espece/",x$taxref[i]),"\"><img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"https://github.com/frousseu/rungrass/raw/website/run2.png\"></a>&nbsp;&nbsp;",x$family[i],"</span>
     </p>
    </div>  
-  </a>
  "))
 }
 
