@@ -2,6 +2,10 @@
 
 library(jsonlite)
 library(readxl)
+library(taxize)
+library(rgbif)
+library(foreach)
+library(doParallel)
 
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
@@ -12,7 +16,7 @@ dcsv<-read.csv("C:/Users/God/Documents/rungrass/grasses.csv",sep=";",na.strings=
 
 d$photo<-gsub("/medium.|/small.|/large.","/original.",d$photo)
 
-d<-merge(d,dcsv[,c("sp","photo","attribution")],all.x=TRUE) # only get attributions
+d<-merge(d,dcsv[,c("sp","photo","attribution","powo","gbif")],all.x=TRUE) # only get attributions
 d<-d[order(d$sp,d$rank),]
 
 d<-unique(d)
@@ -40,9 +44,42 @@ for(i in w){ # looping is better cause sometimes it times-out
 
 d$attribution[which(is.na(d$attribution))]<-d$credit[which(is.na(d$attribution))]
 
+### get POWO link
+k<-d$family!="Excluded" & is.na(d$powo)
+sp<-unique(d$sp[k])
+if(length(sp)){
+  powo<-get_pow(sp,ask=FALSE,accepted=TRUE,rank_filter="species")
+  powourl<-data.frame(sp=sp,powo=attributes(powo)$uri)
+  d$powo[k]<-powourl$powo[match(d$sp[k],powourl$sp)]
+}
+#sp<-unique(d$sp[d$family!="Excluded" & is.na(d$powo)]) # manually replace link
+#d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:416623-1"
+
+### get GBIF link
+k<-d$family!="Excluded" & is.na(d$gbif)
+sp<-unique(d$sp[k])
+if(length(sp)){
+  registerDoParallel(detectCores())
+  keys<-foreach(i=sp,.packages=c("rgbif")) %dopar% {
+    sptab<-rev(sort(table(as.data.frame(occ_search(scientificName=i,limit=200)$data)$scientificName)))
+    spfull<-names(sptab)[1]
+    key<-as.data.frame(name_suggest(q=spfull)$data)$key[1]
+    #print(spfull)
+    file.path("https://www.gbif.org/fr/species",key)
+  }
+  gbifurl<-data.frame(sp=sp,gbif=unlist(keys))
+  d$gbif[k]<-gbifurl$gbif[match(d$sp[k],gbifurl$sp)]
+}
+
+
+#sptab<-rev(sort(table(as.data.frame(occ_search(scientificName="Cyperus involucratus",limit=200)$data)$scientificName)))
+d$gbif[d$sp=="Cyperus involucratus"]<-"https://www.gbif.org/fr/species/2714166"
+
 write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=";",na="")
 
 
+d$cbnm<-paste0("https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",d$taxref))
+d$borbonica<-paste0("http://atlas.borbonica.re/espece/",d$taxref)
 d$flore<-ifelse(is.na(d$flore),"-",d$flore)
 d$index<-ifelse(is.na(d$index),"-",d$index)
 d$genus<-sapply(strsplit(d$sp," "),"[",1)
@@ -76,7 +113,7 @@ cat(paste0("
   <head>
   <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
   <title>
-      Graminées, cypéracées et juncacées de la Réunion
+      RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
   <meta name=\"keywords\" content=\"Réunion, poacées, grass, grasses, poaceae, sedge, sedges, cypéracées, cyperaceae, cyperus, rush, rushes, juncacées, juncaceae, botanique, flore, herbes, herb, herbe, graminées, carex\">
   <style>
@@ -120,14 +157,14 @@ a {
 .species {
   width: 100%;
   padding: 0px; 
-  background: forestgreen;
+  background: #228B22; /* forestgreen; */
   /* background: #39AC39; */
   border-radius: 5px;
 }
-.species:hover {
-  opacity: 0.70;
-  filter: alpha(opacity=100);
-}
+/* .species:hover { */
+/*  opacity: 0.70; */
+/*  filter: alpha(opacity=100); */
+/* } */
 .row::after {
   content: \"\";
   clear: both;
@@ -304,19 +341,44 @@ width: 100%;
 
 }  
   
+
+species_links<-function(x,i){
+  paste0(
+    "<a target=\"_blank\" href=\"",x$cbnm[i],"\">
+       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\">
+     </a>
+     <a target=\"_blank\" href=\"",x$borbonica[i],"\">
+       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\">
+     </a>
+     <a target=\"_blank\" href=\"",x$powo[i],"\">
+       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\">
+     </a>
+     <a target=\"_blank\" href=\"",x$gbif[i],"\">
+       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\"> 
+     </a>
+     </a>&nbsp;&nbsp;"
+  )
+}
+
+
 species_header<-function(x,i){
   cat(paste0(
  "<div id=\"",x$sp[i],"\" class=\"species\">
     <p class=\"p2\"><a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\"><span class=\"p2\">
-      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","</a><span style=\"float:right;\"><a target=\"_blank\" href=\"",paste0("http://atlas.borbonica.re/espece/",x$taxref[i]),"\"><img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"https://github.com/frousseu/rungrass/raw/website/run2.png\"></a>&nbsp;&nbsp;",x$family[i],"</span>
+      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span></a>","<span style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
     </p>
    </div>  
  "))
 }
 
 species_photo<-function(x,i){
+  if(!is.na(x$large[i])){
+    large<-x$large[i]
+  }else{
+    large<-x$photo[i]
+  }
   cat(paste0(
-    "<img class=\"img2\" src=\"",x$photo[i],"\" src2=\"","testing","\" title=\"",paste(x$attribution[i]),"\" alt=\"",paste(x$obs[i]),"\">"
+    "<img class=\"img2\" src=\"",gsub("/original.","/small.",x$photo[i]),"\" data-src=\"",large,"\" title=\"",paste(x$attribution[i]),"\" alt=\"",paste(x$obs[i]),"\">"
   ))
 }
 
@@ -380,7 +442,8 @@ cat("
     img.onclick = function(evt) {
     console.log(evt);
     modal.style.display = \"block\";
-    modalImg.src = this.src;
+    // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
+    modalImg.src = this.dataset.src;
     captionText.innerHTML = this.title;
     linkText.innerHTML = '<a class=\"a2\" href=\"' + this.alt + '\" target=\"_blank\">' + this.alt + '</a>' ;
     }
