@@ -73,7 +73,7 @@ if(length(sp)){
 
 
 #sptab<-rev(sort(table(as.data.frame(occ_search(scientificName="Cyperus involucratus",limit=200)$data)$scientificName)))
-d$gbif[d$sp=="Cyperus involucratus"]<-"https://www.gbif.org/fr/species/2714166"
+d$gbif[d$sp=="Anthoxanthum odoratum"]<-"https://www.gbif.org/fr/species/2705975"
 
 write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=";",na="")
 
@@ -111,16 +111,27 @@ cat(paste0("
 <!DOCTYPE html>
   <html>
   <head>
-  <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+  /* <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'> */
+  <link href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100&display=swap' rel='stylesheet'>
   <title>
       RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
   <meta name=\"keywords\" content=\"Réunion, poacées, grass, grasses, poaceae, sedge, sedges, cypéracées, cyperaceae, cyperus, rush, rushes, juncacées, juncaceae, botanique, flore, herbes, herb, herbe, graminées, carex\">
   <style>
-  body .main-container {
-    max-width: 1950px !important;
-    width: 1950px !important;
-  }
+
+:root {
+  --green: #5cbe35; /* #7AB914; */
+  --white: #fff8dc; /* #F2F3F4; */
+  --black: #111111;
+  --gray: #fff8dc44;
+}
+* {
+  background-color: var(--black);
+}
+body .main-container {
+  max-width: 1950px !important;
+  width: 1950px !important;
+}
 body {
   max-width: 1950px !important;
 }
@@ -131,21 +142,50 @@ p {
   padding: 0px;
   margin: 4px;
   font-family: 'Roboto Mono';
+  font-weight: 100;
+  color: var(--white);
+}
+h1 {
+  color: var(--green);
+  font-size:60px;
+  padding-left:10px;
+  padding-top:0px;
+  padding-bottom:0px;
+  font-family:'Helvetica'; 
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+h2 {
+  color:var(--white);
+  font-size:40px;
+  padding-left:10px;
+  padding-top:0px;
+  padding-bottom:0px;
+  font-family:'Helvetica'; 
+  margin-top: 0;
+  margin-bottom: 30px;
 }
 a {
   text-decoration: none; /* no underline */
-  color: #ccc;
+  color: var(--green);
+  font-weight: normal;
 }
 .a2 {
   text-decoration: none; /* no underline */
-  color: #CCC;
+  color: var(--green);
 }
 .atoc {
   text-decoration: none; /* no underline */
-  color: #000;
+  color: var(--green); /* #228B22; */
+  font-weight: normal;
+}
+.atoc:hover {
+  opacity: 0.50;
+  filter: alpha(opacity=100);
 }
 .flore {
-  color: #FFFFFF77;
+  color: var(--gray);
   /*font-style: italic;*/
 }
 .column {
@@ -157,9 +197,10 @@ a {
 .species {
   width: 100%;
   padding: 0px; 
-  background: #228B22; /* forestgreen; */
+  margin-top: 20px;
+  background: var(--black); /* forestgreen; */
   /* background: #39AC39; */
-  border-radius: 5px;
+  border-radius: 0px;
 }
 /* .species:hover { */
 /*  opacity: 0.70; */
@@ -175,17 +216,18 @@ a {
   height:200px;
   width:14.26%;
   object-fit:cover;
-  padding: 2px;
-  background: #EEEEEE;
+  padding: 1px; /* 2px */
+  background: #000000; /* #EEEEEE */
   background-origin: content-box;
   cursor: pointer;
+  border-radius: 50px;
 }
 .img2:hover {
   opacity: 0.70;
   filter: alpha(opacity=100);
 }
 .p2 {
-  color:#FFFFFFEE;
+  color: var(--white);
   font-size:30px;
   font-family:'Helvetica' 
 }
@@ -255,8 +297,8 @@ div.sticky {
   padding: 0px;
     width: 100%;
   padding: 0px;
-  background: forestgreen;
-  border-radius: 5px;
+  background: var(--black);
+  border-radius: 0px;
 }
 
 div.sticky2 {
@@ -313,28 +355,29 @@ width: 100%;
 </style>
   </head>
   <body>
-  <div class=\"species\" style=\"border-radius: 10px\">
-  <h1 style = \"color:#FFFFFFEE;font-size:40px;padding-left:10px;padding-top:5px;padding-bottom:5px;font-family:'Helvetica';\">RUNGRASS<img style=\"height; 35px; width: 35px;\" src=\"test3.png\"><br>Index photographique des poacées, cypéracées et juncacées de la Réunion</h1>
-  </div>
-  <p style = \"color:black;font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
-<p style = \"color:black;font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
+  <h1>RUNGRASS<img style=\"height; 35px; width: 35px;\" src=\"test3.png\"></h1>
+  <h2>Index photographique des poacées, cypéracées et juncacées de la Réunion</h2>
+  
+  <p style = \"font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
+  
+<p style = \"font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
 
-<p style = \"color:black;font-size:17px;\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
+<p style = \"font-size:17px;\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
 
 
 <div style=\"display:inline-block; width:100%;\">
   <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
   <div class=\"sticky\">
-  <p class=\"p2\" style = \"color:#FFFFFFEE;font-size:30px;\">Genre</p>
+  <p class=\"p2\">Espèces</p>
   </div>
   <p style = \"color:black;font-size:17px;\">",genus(),"
   </p>
   </div>
   <div style=\"width:85%; float: left; display: inline-block; padding-left: 0.5%;\">
 
-<div class=\"species\">
-<p class=\"p2\" style = \"color:#FFFFFFEE;font-size:30px; padding-top: 0px;\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN - CPIE Mascarin</span><span style=\"float:right;\">Famille</span>
+<div class=\"species\" style=\"margin-top: 0px;\">
+<p class=\"p2\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN - CPIE Mascarin</span><span class=\"flore\" style=\"float:right;\">Famille</span>
 </p>
 </div>
 "))
@@ -345,16 +388,19 @@ width: 100%;
 species_links<-function(x,i){
   paste0(
     "<a target=\"_blank\" href=\"",x$cbnm[i],"\">
-       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\">
+       <span style=\"color: #EEE; font-weight: 20; font-family: 'Arial Narrow'; font-size: 25px;\">ID</span>  
+     </a>
+     <a target=\"_blank\" href=\"",x$cbnm[i],"\">
+       <img style=\"height; 18px; width: 18px; padding: 0px;\" src=\"https://www.cbnm.org/img/logos/Logo_cbnm_100.jpg\">
      </a>
      <a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\">
+       <img style=\"height; 25px; width: 25px; padding: 0px;\" src=\"http://atlas.borbonica.re/static/custom/images/favicon.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
-       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\">
+       <span style=\"color: #EEE; font-weight: 20; font-family: 'Arial Narrow'; font-size: 25px;\">POWO</span>
      </a>
      <a target=\"_blank\" href=\"",x$gbif[i],"\">
-       <img style=\"height; 30px; width: 30px; padding: 0px;\" src=\"Rplot.png\"> 
+       <img style=\"height; 60px; width: 60px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/OvIKGyLjpHunSMJjf67AO/e3c76db274792f6268b29293c5f46b81/GBIF-2015.svg\"> 
      </a>
      </a>&nbsp;&nbsp;"
   )
@@ -365,7 +411,7 @@ species_header<-function(x,i){
   cat(paste0(
  "<div id=\"",x$sp[i],"\" class=\"species\">
     <p class=\"p2\"><a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\"><span class=\"p2\">
-      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span></a>","<span style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
+      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span></a>","<span class=\"flore\" style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
     </p>
    </div>  
  "))
@@ -385,7 +431,7 @@ species_photo<-function(x,i){
 species_excluded<-function(i,j){
   #paste(sapply(seq_along(i),function(i){
   excluded<-paste0(paste0("<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",j),"\" target=\"_blank\">",i,"</a>"),collapse=", ")
-  cat(paste("<br><br><p style = \"color:black;font-size:17px;\">Liste des espèces qui n'ont pas été retenues et lien vers l'index du CBN - CPIE Mascarin:"),excluded,"</p><br><br>")
+  cat(paste("<br><br><p style = \"font-size:17px;\">Liste des espèces qui n'ont pas été retenues et lien vers l'index du CBN - CPIE Mascarin:"),excluded,"</p><br><br>")
 }
 
 
