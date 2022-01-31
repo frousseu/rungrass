@@ -123,7 +123,7 @@ cat(paste0("
   --green: #5cbe35; /* #7AB914; */
   --white: #fff8dc; /* #F2F3F4; */
   --black: #111111;
-  --gray: #fff8dc44;
+  --gray: #fff8dc77;
 }
 * {
   background-color: var(--black);
@@ -178,7 +178,7 @@ a {
 .atoc {
   text-decoration: none; /* no underline */
   color: var(--green); /* #228B22; */
-  font-weight: normal;
+  font-weight: 400;
 }
 .atoc:hover {
   opacity: 0.50;
@@ -186,6 +186,9 @@ a {
 }
 .flore {
   color: var(--gray);
+  font-size:20px;
+  font-family:'Helvetica' 
+  font-weight: 100;
   /*font-style: italic;*/
 }
 .column {
@@ -230,6 +233,7 @@ a {
   color: var(--white);
   font-size:30px;
   font-family:'Helvetica' 
+  font-weight: 100;
 }
 .scroller {
   scrollbar-width: thin;
@@ -267,8 +271,8 @@ max-width: 70%;
 #caption {
 margin: auto;
 display: block;
-width: 80%;
-max-width: 900px;
+width: 70%;
+max-width: 70%;
 text-align: center;
 color: #ccc;
 padding: 10px 0;
@@ -281,7 +285,7 @@ font-family: 'Roboto Mono';
 margin: auto;
 display: block;
 width: 70%;
-max-width: 70%; /*700px*/
+max-width: 70%;
 text-align: center;
 color: #ccc;
 padding: 10px 0;
@@ -388,19 +392,16 @@ width: 100%;
 species_links<-function(x,i){
   paste0(
     "<a target=\"_blank\" href=\"",x$cbnm[i],"\">
-       <span style=\"color: #EEE; font-weight: 20; font-family: 'Arial Narrow'; font-size: 25px;\">ID</span>  
-     </a>
-     <a target=\"_blank\" href=\"",x$cbnm[i],"\">
-       <img style=\"height; 18px; width: 18px; padding: 0px;\" src=\"https://www.cbnm.org/img/logos/Logo_cbnm_100.jpg\">
+       <img style=\"height: 18px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img style=\"height; 25px; width: 25px; padding: 0px;\" src=\"http://atlas.borbonica.re/static/custom/images/favicon.ico\">
+       <img style=\"height: 21px; padding: 0px;\" src=\"http://atlas.borbonica.re/static/custom/images/favicon.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
-       <span style=\"color: #EEE; font-weight: 20; font-family: 'Arial Narrow'; font-size: 25px;\">POWO</span>
+       <img style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$gbif[i],"\">
-       <img style=\"height; 60px; width: 60px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/OvIKGyLjpHunSMJjf67AO/e3c76db274792f6268b29293c5f46b81/GBIF-2015.svg\"> 
+       <img style=\"height: 18px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
      </a>
      </a>&nbsp;&nbsp;"
   )
@@ -410,8 +411,8 @@ species_links<-function(x,i){
 species_header<-function(x,i){
   cat(paste0(
  "<div id=\"",x$sp[i],"\" class=\"species\">
-    <p class=\"p2\"><a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",x$taxref[i]),"\" target=\"_blank\"><span class=\"p2\">
-      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span></a>","<span class=\"flore\" style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
+    <p class=\"p2\"><span class=\"p2\">
+      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span class=\"flore\" style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
     </p>
    </div>  
  "))
