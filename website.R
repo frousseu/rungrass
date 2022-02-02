@@ -111,11 +111,12 @@ cat(paste0("
 <!DOCTYPE html>
   <html>
   <head>
-  /* <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'> */
   <link href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100&display=swap' rel='stylesheet'>
   <title>
       RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
+  <link rel='icon' type='image/png' href='rungrass3.png?v=2'/>
+  <link rel='shortcut icon' type='image/png' href='rungrass3.png?v=2'/>
   <meta name=\"keywords\" content=\"Réunion, poacées, grass, grasses, poaceae, sedge, sedges, cypéracées, cyperaceae, cyperus, rush, rushes, juncacées, juncaceae, botanique, flore, herbes, herb, herbe, graminées, carex\">
   <style>
 
@@ -142,17 +143,17 @@ p {
   padding: 0px;
   margin: 4px;
   font-family: 'Roboto Mono';
-  font-weight: 100;
+  font-weight: 200;
   color: var(--white);
 }
 h1 {
   color: var(--green);
-  font-size:60px;
+  font-size:90px;
   padding-left:10px;
   padding-top:0px;
   padding-bottom:0px;
   font-family:'Helvetica'; 
-  font-weight: 800;
+  font-weight: 100;
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -163,13 +164,14 @@ h2 {
   padding-top:0px;
   padding-bottom:0px;
   font-family:'Helvetica'; 
+  font-weight: 50;
   margin-top: 0;
   margin-bottom: 30px;
 }
 a {
   text-decoration: none; /* no underline */
   color: var(--green);
-  font-weight: normal;
+  font-weight: 600;
 }
 .a2 {
   text-decoration: none; /* no underline */
@@ -178,7 +180,7 @@ a {
 .atoc {
   text-decoration: none; /* no underline */
   color: var(--green); /* #228B22; */
-  font-weight: 400;
+  font-weight: 600;
 }
 .atoc:hover {
   opacity: 0.50;
@@ -290,7 +292,7 @@ text-align: center;
 color: #ccc;
 padding: 10px 0;
 margin-bottom: 50px;
-height: 25px;
+height: 42px;
 font-family: 'Roboto Mono';
 }
 
@@ -357,13 +359,14 @@ width: 100%;
 }
 }
 </style>
-  </head>
-  <body>
+</head>
+
+<body>
   
-  <h1>RUNGRASS<img style=\"height; 35px; width: 35px;\" src=\"test3.png\"></h1>
-  <h2>Index photographique des poacées, cypéracées et juncacées de la Réunion</h2>
+<h1>rungrass<img style=\"height; 53px; width: 53px;\" src=\"rungrass3.png\"></h1>
+<h2>Index photographique des poacées, cypéracées et juncacées de la Réunion</h2>
   
-  <p style = \"font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
+<p style = \"font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
 <p style = \"font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
 
