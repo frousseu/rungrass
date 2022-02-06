@@ -75,6 +75,9 @@ if(length(sp)){
   d$gbif[k]<-gbifurl$gbif[match(d$sp[k],gbifurl$sp)]
 }
 
+# manually correct certain links not going to the right taxon
+d$gbif[d$sp=="Cyperus involucratus"]<-paste0("https://www.gbif.org/fr/species/",2714166)
+
 
 ### OCCS #######################
 
@@ -173,15 +176,16 @@ if(FALSE){
   
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
   run<-st_buffer(st_geometry(run),50)
+  mult<-abs(diff(st_bbox(run)[c(1,3)])/diff(st_bbox(run)[c(2,4)]))
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
     x<-occs[which(occs$sp==sp[i]),]
-    png(paste0(file.path("C:/Users/God/Downloads",gsub(" ","_",sp[i])),".png"),height=40,width=45,units="px")
-    par(mar=c(0,0,0,0),bg="#111111")
+    png(paste0(file.path("C:/Users/God/Downloads",gsub(" ","_",sp[i])),".png"),height=40,width=40*mult,units="px")
+    par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
     plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
     if(nrow(x)>0){
-      plot(st_geometry(x),pch=16,col=alpha("#5CBE35",0.75),cex=1,add=TRUE)
+      plot(st_geometry(x),pch=16,col=alpha("#5CBE35",0.6),cex=1.2,add=TRUE)
     }
     dev.off()
     cat("\r",paste(i,length(sp),sep=" / "))
@@ -301,6 +305,7 @@ a {
   text-decoration: none; /* no underline */
   color: var(--green); /* #228B22; */
   font-weight: 600;
+  font-size: 16px;
 }
 .atoc:hover {
   opacity: 0.50;
@@ -326,6 +331,7 @@ a {
   background: var(--black); /* forestgreen; */
   /* background: #39AC39; */
   border-radius: 0px;
+  /* position: relative;  for flushing links to the bottom on the right side instead of float: right; */
 }
 /* .species:hover { */
 /*  opacity: 0.70; */
@@ -535,7 +541,7 @@ species_header<-function(x,i){
   cat(paste0(
  "<div id=\"",x$sp[i],"\" class=\"species\">
     <p class=\"p2\"><span class=\"p2\">
-      ",x$sp[i],"&nbsp<img style=\"height: 35px; padding: 0px;\" src=\"",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span class=\"flore\" style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
+      ",x$sp[i],"&nbsp<img style=\"height: 35px; padding: 0px;\" src=\"",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span class=\"flore\" style=\"float: right; margin-top: 17px;\">",species_links(x,i),x$family[i],"</span>
     </p>
    </div>  
  "))
