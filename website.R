@@ -6,9 +6,13 @@ library(taxize)
 library(rgbif)
 library(foreach)
 library(doParallel)
+library(sf)
+library(jsonlite)
 
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
+
+### Data ########################################
 
 d<-as.data.frame(read_excel("C:/Users/God/Documents/rungrass/grasses.xlsx"))
 #dcsv<-read.csv("https://raw.githubusercontent.com/frousseu/reunion_graminoids/main/grasses.csv",sep=";")
@@ -26,7 +30,7 @@ d<-unique(d)
 d$idphoto<-sapply(strsplit(sapply(strsplit(d$photo,"/original."),function(i){if(length(i)==1){NA}else{i[1]}}),"/"),tail,1)
 d$idobs<-ifelse(!is.na(d$idphoto),sapply(strsplit(d$obs,"/"),tail,1),NA)
   
-### only get attributions for empty ones
+### iNat credits ############################
 #w<-1:nrow(d) # get them all to verify if any attributions have changed
 w<-which(!is.na(d$idphoto) & is.na(d$attribution))
 for(i in w){ # looping is better cause sometimes it times-out
@@ -44,7 +48,7 @@ for(i in w){ # looping is better cause sometimes it times-out
 
 d$attribution[which(is.na(d$attribution))]<-d$credit[which(is.na(d$attribution))]
 
-### get POWO link
+### POWO links #################################
 k<-d$family!="Excluded" & is.na(d$powo)
 sp<-unique(d$sp[k])
 if(length(sp)){
@@ -55,16 +59,16 @@ if(length(sp)){
 #sp<-unique(d$sp[d$family!="Excluded" & is.na(d$powo)]) # manually replace link
 #d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:416623-1"
 
-### get GBIF link
+### GBIF links ##################################
 k<-d$family!="Excluded" & is.na(d$gbif)
 sp<-unique(d$sp[k])
 if(length(sp)){
   registerDoParallel(detectCores())
   keys<-foreach(i=sp,.packages=c("rgbif")) %dopar% {
-    sptab<-rev(sort(table(as.data.frame(occ_search(scientificName=i,limit=200)$data)$scientificName)))
-    spfull<-names(sptab)[1]
-    key<-as.data.frame(name_suggest(q=spfull)$data)$key[1]
-    #print(spfull)
+    #sptab<-rev(sort(table(as.data.frame(occ_search(scientificName=i,limit=200)$data)$scientificName)))
+    #spfull<-names(sptab)[1]
+    #key<-as.data.frame(name_suggest(q=spfull)$data)$key[1]
+    key<-as.data.frame(name_backbone(name=i, rank='species', kingdom='plants'))$usageKey[1]
     file.path("https://www.gbif.org/fr/species",key)
   }
   gbifurl<-data.frame(sp=sp,gbif=unlist(keys))
@@ -72,11 +76,124 @@ if(length(sp)){
 }
 
 
-#sptab<-rev(sort(table(as.data.frame(occ_search(scientificName="Cyperus involucratus",limit=200)$data)$scientificName)))
-d$gbif[d$sp=="Anthoxanthum odoratum"]<-"https://www.gbif.org/fr/species/2705975"
+### OCCS #######################
+
+if(FALSE){
+  
+#### GBIF occs ##################
+  
+# maybe use all suggested species names (e.g. E. tenella not fully covered)
+# remove iNat with datasetName
+
+  run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
+  run<-st_buffer(st_geometry(run),50)
+  k<-d$family!="Excluded"
+  sp<-unique(d$sp[k])
+  key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
+  other<-d$other[match(sp,d$sp)]
+  #i<-which(sp=="Aristida setacea")
+  occs<-foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
+    if(!is.na(other[i])){
+      sps<-c(sp[i],strsplit(other[i],", ")[[1]])
+      keys<-sapply(sps,function(j){
+        as.data.frame(name_backbone(name=j, rank='species', kingdom='plants'))$usageKey[1]
+      })
+    }else{
+      sps<-sp[i]
+      keys<-key[i]
+    }
+    l<-lapply(seq_along(sps),function(k){
+      spoccs<-as.data.frame(occ_search(taxonKey=keys[k],limit=2000,hasCoordinate=TRUE,country="RE")$data)
+      if(nrow(spoccs)==0){
+        NULL
+      }else{
+        spoccs$sp<-sp[i]
+        spoccs
+      }
+    })
+    Sys.sleep(0.2) # not to make too many requests, but not sure it is relevant
+    cat("\r",paste(i,length(sp),sep=" / "))
+    l
+  }
+  gbif<-unlist(occs, recursive=FALSE)
+  gbif<-gbif[!sapply(gbif,is.null)]
+  gbif<-lapply(gbif,function(i){
+    if(!any(names(i)=="datasetName")){
+      i$datasetName<-NA
+      i
+    }else{
+      i
+    }
+  })
+  gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName")]})
+  gbif<-do.call("rbind",gbif)
+  gbif<-gbif[-grep("iNaturalist",gbif$datasetName),]
+  gbif<-st_as_sf(gbif,coords=c("decimalLongitude","decimalLatitude"),crs=4326)
+  gbif<-st_transform(gbif,st_crs(run))
+  plot(st_geometry(run))
+  plot(st_geometry(gbif),add=TRUE,pch=1)
+
+### iNat occs ##############################
+  
+# include reviewed_by me 
+# https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
+
+  api<-"https://api.inaturalist.org/v1/observations?geo=true&verifiable=true&place_id=8834&taxon_id=47434%2C47161%2C52642&hrank=species&lrank=subspecies&order=desc&order_by=created_at&page=1"
+  x<-fromJSON(api)
+  pages<-ceiling(x$total_results/30)
+
+  inatjson<-foreach(i=1:pages,.packages=c("jsonlite")) %do% {
+    page<-paste0("page=",i)
+    x<-fromJSON(gsub("page=1",page,api))
+    inat<-data.frame(
+      sp=x$results$taxon$name,
+      user=x$results$user$login,
+      location=x$results$location,
+      grade=x$results$quality_grade
+    )
+    row.names(inat)<-((i-1)*30+1):(((i-1)*30+1)+nrow(inat)-1)
+    cat("\r",paste(i,pages,sep=" / "))
+    inat
+  }  
+  inat<-do.call("rbind",inatjson)
+  inat$lon<-as.numeric(sapply(strsplit(inat$location,","),"[",2))
+  inat$lat<-as.numeric(sapply(strsplit(inat$location,","),"[",1))
+  inat<-st_as_sf(inat,coords=c("lon","lat"),crs=4326)
+  inat<-st_transform(inat,st_crs(run))
+  #plot(st_geometry(run))
+  #plot(st_geometry(inat),add=TRUE,pch=1)
+  inat<-inat[inat$grade=="research" | inat$user=="frousseu",]
+  
+  occs<-rbind(gbif[,"sp"],inat[,"sp"])
+  #plot(st_geometry(run))
+  #plot(st_geometry(occs),add=TRUE,pch=1)
+  
+  
+### Maps ####################
+  
+  run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
+  run<-st_buffer(st_geometry(run),50)
+  k<-d$family!="Excluded"
+  sp<-unique(d$sp[k])
+  foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
+    x<-occs[which(occs$sp==sp[i]),]
+    png(paste0(file.path("C:/Users/God/Downloads",gsub(" ","_",sp[i])),".png"),height=40,width=45,units="px")
+    par(mar=c(0,0,0,0),bg="#111111")
+    plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
+    if(nrow(x)>0){
+      plot(st_geometry(x),pch=16,col=alpha("#5CBE35",0.75),cex=1,add=TRUE)
+    }
+    dev.off()
+    cat("\r",paste(i,length(sp),sep=" / "))
+  }
+  
+}
+
+### Write data csv ##################
 
 write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=";",na="")
 
+### Data for website #################
 
 d$cbnm<-paste0("https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",d$taxref))
 d$borbonica<-paste0("http://atlas.borbonica.re/espece/",d$taxref)
@@ -88,6 +205,8 @@ d$genus<-sapply(strsplit(d$sp," "),"[",1)
 #d<-d[order(as.integer(is.na(d$photo)),-as.integer(factor(d$family)),d$sp,d$rank),]
 
 d<-d[order(factor(d$family,levels=c("Poaceae","Cyperaceae","Juncaceae","Excluded")),d$sp,d$rank),]
+
+## Functions #################
 
 genus<-function(i){
   #ge<-sort(unique(d$genus[d$family!="Excluded"]))  
@@ -105,6 +224,7 @@ genus<-function(i){
   paste(l,collapse="<br>")
   #paste(paste0("<a class=\"atoc\" href=\"#",ge,"\">",ge,"</a>"),collapse="<br>")
 }
+
 
 css<-function(i){
 cat(paste0("
@@ -364,9 +484,9 @@ width: 100%;
 <body>
   
 <h1>rungrass<img style=\"height; 53px; width: 53px;\" src=\"rungrass3.png\"></h1>
-<h2>Index photographique des poacées, cypéracées et juncacées de la Réunion</h2>
+<h2>Guide photographique des poacées, cypéracées et juncacées de la Réunion</h2>
   
-<p style = \"font-size:17px;\">Cette page est un index photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
+<p style = \"font-size:17px;\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
 <p style = \"font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
 
@@ -415,7 +535,7 @@ species_header<-function(x,i){
   cat(paste0(
  "<div id=\"",x$sp[i],"\" class=\"species\">
     <p class=\"p2\"><span class=\"p2\">
-      ",x$sp[i],"</span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span class=\"flore\" style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
+      ",x$sp[i],"&nbsp<img style=\"height: 35px; padding: 0px;\" src=\"",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span class=\"flore\" style=\"float:right;\">",species_links(x,i),x$family[i],"</span>
     </p>
    </div>  
  "))
@@ -439,9 +559,13 @@ species_excluded<-function(i,j){
 }
 
 
+### Species list #################
+
 d2<-d[d$family!="Excluded",]
 l<-split(d2,factor(d2$sp,levels=unique(d2$sp)))
 
+
+### HTML #########################
 
 con <- file("C:/Users/God/Downloads/index.html", open = "wt", encoding = "UTF-8")
 sink(con)
@@ -467,6 +591,9 @@ cat("
   <div id=\"link\"></div>
 </div>     
 ")
+
+### Script ####################
+
 cat("
 <script>
 
