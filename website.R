@@ -8,6 +8,7 @@ library(foreach)
 library(doParallel)
 library(sf)
 library(jsonlite)
+library(scales)
 
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
@@ -174,18 +175,35 @@ if(FALSE){
   
 ### Maps ####################
   
+  ### Shaded terrain
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
-  run<-st_buffer(st_geometry(run),50)
+  run<-st_buffer(st_buffer(run,100),-100)
+  lf<-list.files("C:/Users/God/Downloads/BDALTI974/BDALTIV2_2-0_25M_ASC_RGR92UTM40S-REUN89_D974_2016-03-11/BDALTIV2/3_SUPPLEMENTS_LIVRAISON_2020-06-00408/BDALTIV2_MNT_25M_ASC_RGR92UTM40S_REUN89_D974",full.names=TRUE,pattern=".shp")
+  source<-st_read(lf[1])
+  lf<-list.files("C:/Users/God/Downloads/BDALTI974/BDALTIV2_2-0_25M_ASC_RGR92UTM40S-REUN89_D974_2016-03-11/BDALTIV2/1_DONNEES_LIVRAISON_2020-06-00408/BDALTIV2_MNT_25M_ASC_RGR92UTM40S_REUN89_D974",full.names=TRUE)
+  l<-lapply(lf,rast)
+  r<-do.call("merge",l)
+  crs(r)<-"+proj=utm +zone=40 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # proj of source
+  r<-focal(r,9,mean) # smooth pixels and look
+  slope <- terrain(r, "slope", unit="radians")
+  aspect <- terrain(r, "aspect", unit="radians")
+  hill <- shade(slope, aspect, 30, 270)
+  hill<-crop(hill,st_transform(st_buffer(run,dist=3000),crs(r)))
+  hill<-mask(hill,vect(st_transform(run,crs(r))))
+  
+  ### locs
   mult<-abs(diff(st_bbox(run)[c(1,3)])/diff(st_bbox(run)[c(2,4)]))
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])
+  occs2<-st_transform(occs,crs(hill))
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
-    x<-occs[which(occs$sp==sp[i]),]
-    png(paste0(file.path("C:/Users/God/Downloads",gsub(" ","_",sp[i])),".png"),height=40,width=40*mult,units="px")
+    x<-occs2[which(occs2$sp==sp[i]),]
+    png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"),height=100,width=100*mult,units="px")
     par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
-    plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
+    #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
+    plot(hill,col=grey(seq(0.3,1,length.out=100)),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
     if(nrow(x)>0){
-      plot(st_geometry(x),pch=16,col=alpha("#5CBE35",0.6),cex=1.2,add=TRUE)
+      plot(st_geometry(x),pch=16,col=alpha("tomato4",0.7),cex=2,xpd=TRUE,add=TRUE)
     }
     dev.off()
     cat("\r",paste(i,length(sp),sep=" / "))
@@ -272,7 +290,7 @@ p {
 }
 h1 {
   color: var(--green);
-  font-size:90px;
+  font-size: 12vh;
   padding-left:10px;
   padding-top:0px;
   padding-bottom:0px;
@@ -280,17 +298,35 @@ h1 {
   font-weight: 100;
   margin-top: 0;
   margin-bottom: 0;
+  text-align: top;
 }
 h2 {
-  color:var(--white);
-  font-size:40px;
+  color: var(--white);
+  font-size: 30px;
   padding-left:10px;
   padding-top:0px;
   padding-bottom:0px;
-  font-family:'Helvetica'; 
+  font-family:'Roboto Mono'; 
   font-weight: 50;
   margin-top: 0;
-  margin-bottom: 30px;
+  margin-bottom: 0px;
+  /* text-align: left; */
+}
+.button {
+  background-color: var(--black);
+  border: none;
+  color: var(--white);
+  padding: 10px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 40px;
+  font-weight: 800;
+  font-family:'Roboto Mono'; 
+}
+.button:hover {
+  opacity: 0.50;
+  filter: alpha(opacity=100);
 }
 a {
   text-decoration: none; /* no underline */
@@ -366,6 +402,43 @@ a {
 .scroller {
   scrollbar-width: thin;
 }
+
+/* width */
+::-webkit-scrollbar {
+  width: 15px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #222; /* var(--gray); */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  /* background: #444; */
+  opacity: 0.50;
+  filter: alpha(opacity=100);
+  
+}
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+hr {
+  height: 10px;
+  border-width:0;
+  border-radius: 5px;
+  color: black;
+  background-color: #222; /* var(--gray); */
+}
+
 #img2 {
   border-radius: 5px;
   cursor: pointer;
@@ -489,8 +562,26 @@ width: 100%;
 
 <body>
   
-<h1>rungrass<img style=\"height; 53px; width: 53px;\" src=\"rungrass3.png\"></h1>
-<h2>Guide photographique des poacées, cypéracées et juncacées de la Réunion</h2>
+  
+<div style=\"display:inline-block; width:100%; height: 15vh;\">
+  <div style=\"width:44%; float: left; display: inline-block; padding-right: 0.5%;\">
+    <h1>RUNGRASS<img style=\"height; 10vh; width: 10vh;\" src=\"images/rungrass3.png\"></h1>
+  </div>
+  <div style=\"width:50%; float: left; display: inline-block; padding-left: 0.5%;\">
+    <div style=\"text-align: bottom;\">
+      <div style=\"display: inline-block; text-align: left;\">
+        <h2>Guide photographique des poacées,<br>cypéracées et juncacées de la Réunion</h2>
+      </div>
+    </div>
+  </div>
+  <div style=\"width:5%; float: left; display: inline-block; padding-left: 0.5%;\">
+    <button class=\"button\" onclick=\"myFunction()\">?</button>
+  </div>
+</div>  
+  
+<hr>
+  
+<div hidden id=\"myDIV\">  
   
 <p style = \"font-size:17px;\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
@@ -498,6 +589,9 @@ width: 100%;
 
 <p style = \"font-size:17px;\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
 
+<hr>
+
+</div>
 
 <div style=\"display:inline-block; width:100%;\">
   <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
@@ -507,7 +601,7 @@ width: 100%;
   <p style = \"color:black;font-size:17px;\">",genus(),"
   </p>
   </div>
-  <div style=\"width:85%; float: left; display: inline-block; padding-left: 0.5%;\">
+  <div style=\"width:84%; float: left; display: inline-block; padding-left: 1.5%;\">
 
 <div class=\"species\" style=\"margin-top: 0px;\">
 <p class=\"p2\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN - CPIE Mascarin</span><span class=\"flore\" style=\"float:right;\">Famille</span>
@@ -524,7 +618,7 @@ species_links<-function(x,i){
        <img style=\"height: 18px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img style=\"height: 21px; padding: 0px;\" src=\"http://atlas.borbonica.re/static/custom/images/favicon.ico\">
+       <img style=\"height: 21px; padding: 0px;\" src=\"images/borbonica.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
        <img style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
@@ -541,7 +635,7 @@ species_header<-function(x,i){
   cat(paste0(
  "<div id=\"",x$sp[i],"\" class=\"species\">
     <p class=\"p2\"><span class=\"p2\">
-      ",x$sp[i],"&nbsp<img style=\"height: 35px; padding: 0px;\" src=\"",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>&nbsp;&nbsp<span class=\"flore\">",x$flore[i],"</span>","&nbsp;&nbsp<span class=\"flore\">",x$index[i],"</span>","<span class=\"flore\" style=\"float: right; margin-top: 17px;\">",species_links(x,i),x$family[i],"</span>
+      ",x$sp[i],"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>&#32&#32<span class=\"flore\">",gsub(" ","&nbsp",x$flore[i]),"</span>","&#32&#32<span class=\"flore\">",gsub(" ","&nbsp",x$index[i]),"</span>","<span class=\"flore\" style=\"float: right; margin-top: 20px;\">",species_links(x,i),x$family[i],"</span>
     </p>
    </div>  
  "))
@@ -573,7 +667,7 @@ l<-split(d2,factor(d2$sp,levels=unique(d2$sp)))
 
 ### HTML #########################
 
-con <- file("C:/Users/God/Downloads/index.html", open = "wt", encoding = "UTF-8")
+con <- file("C:/Users/God/Documents/rungrass/index.html", open = "wt", encoding = "UTF-8")
 sink(con)
 css()
 invisible(
@@ -638,6 +732,16 @@ cat("
     modal.style.display = \"none\";
     }
     
+    function myFunction() {
+  var x = document.getElementById(\"myDIV\");
+  if (x.style.display === \"none\") {
+    x.style.display = \"block\";
+  } else {
+    x.style.display = \"none\";
+  }
+  
+}
+    
     </script>    
 ")
 cat("
@@ -649,5 +753,5 @@ cat("
 sink()
 close(con)
 
-file.show("C:/Users/God/Downloads/index.html")
+file.show("C:/Users/God/Documents/rungrass/index.html")
 
