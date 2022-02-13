@@ -9,6 +9,7 @@ library(doParallel)
 library(sf)
 library(jsonlite)
 library(scales)
+library(terra)
 
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
@@ -84,7 +85,7 @@ d$gbif[d$sp=="Cyperus involucratus"]<-paste0("https://www.gbif.org/fr/species/",
 
 if(FALSE){
   
-#### GBIF occs ##################
+#### GBIF occs ##################m
   
 # maybe use all suggested species names (e.g. E. tenella not fully covered)
 # remove iNat with datasetName
@@ -94,11 +95,15 @@ if(FALSE){
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])
   key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
-  other<-d$other[match(sp,d$sp)]
+  m<-match(sp,d$sp)
+  other<-d$other[m]
+  flore<-d$flore[m]
+  index<-d$index[m]
   #i<-which(sp=="Aristida setacea")
   occs<-foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
     if(!is.na(other[i])){
-      sps<-c(sp[i],strsplit(other[i],", ")[[1]])
+      sps<-c(sp[i],flore[i],index[i],strsplit(other[i],", ")[[1]])
+      sps<-unique(sps[!is.na(sps)])
       keys<-sapply(sps,function(j){
         as.data.frame(name_backbone(name=j, rank='species', kingdom='plants'))$usageKey[1]
       })
@@ -211,6 +216,15 @@ if(FALSE){
   
 }
 
+### Push pics to GitHub ########################
+#shell("
+#cd /Users/God/Documents/rungrass
+#git add .
+#git commit \"images\"
+#git push origin website
+#")
+
+
 ### Write data csv ##################
 
 write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=";",na="")
@@ -290,12 +304,12 @@ p {
 }
 h1 {
   color: var(--green);
-  font-size: 12vh;
-  padding-left:10px;
+  font-size: 80px;
+  padding-left:0px;
   padding-top:0px;
   padding-bottom:0px;
-  font-family:'Helvetica'; 
-  font-weight: 100;
+  font-family:'Roboto Mono'; 
+  font-weight: 1600;
   margin-top: 0;
   margin-bottom: 0;
   text-align: top;
@@ -316,11 +330,11 @@ h2 {
   background-color: var(--black);
   border: none;
   color: var(--white);
-  padding: 10px 10px;
+  padding: 0px 30px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 40px;
+  font-size: 60px;
   font-weight: 800;
   font-family:'Roboto Mono'; 
 }
@@ -350,9 +364,10 @@ a {
 .flore {
   color: var(--gray);
   font-size:20px;
-  font-family:'Helvetica' 
+  font-family:'Roboto Mono'; 
   font-weight: 100;
-  /*font-style: italic;*/
+  display: inline-block;
+  align-self: flex-end;
 }
 .column {
   float: left;
@@ -396,7 +411,7 @@ a {
 .p2 {
   color: var(--white);
   font-size:30px;
-  font-family:'Helvetica' 
+  font-family:'Roboto Mono'; 
   font-weight: 100;
 }
 .scroller {
@@ -557,32 +572,64 @@ cursor: pointer;
 width: 100%;
 }
 }
+
+.header {
+  display: flex;                  /* establish flex container */
+  flex-direction: row;            /* default value; can be omitted */
+  flex-wrap: wrap;              /* default value; can be omitted */
+  justify-content: space-between; /* switched from default (flex-start, see below) */
+  /* background-color: #111; */
+}
+.header > div {
+  /* width: 100px; */
+  height: 100px;
+  /* border: 2px dashed red; */
+}
+
+.headersp {
+  display: flex;                  /* establish flex container */
+  flex-direction: row;            /* default value; can be omitted */
+  flex-wrap: wrap;              /* default value; can be omitted */
+  justify-content: space-between; /* switched from default (flex-start, see below) */
+  align-content: bottom;
+  align-items: bottom;
+  /* background-color: #111; */
+}
+
+.headersp > div {
+  /* width: 100px; */
+  height: 60px;
+  /* border: 2px dashed red; */
+}
+
+.inner{
+  background: var(--black);
+  display: flex;
+  height: 100%;
+}
+
+
 </style>
 </head>
-
+<a id=\"top\"></a>  
 <body>
-  
-  
-<div style=\"display:inline-block; width:100%; height: 15vh;\">
-  <div style=\"width:44%; float: left; display: inline-block; padding-right: 0.5%;\">
-    <h1>RUNGRASS<img style=\"height; 10vh; width: 10vh;\" src=\"images/rungrass3.png\"></h1>
+
+<div class=\"header\">
+  <div>
+    <h1>RUNGRASS<img style=\"height: 75px; padding-top: 15px;\" src=\"images/rungrass3.png\"></h1>
   </div>
-  <div style=\"width:50%; float: left; display: inline-block; padding-left: 0.5%;\">
-    <div style=\"text-align: bottom;\">
-      <div style=\"display: inline-block; text-align: left;\">
-        <h2>Guide photographique des poacées,<br>cypéracées et juncacées de la Réunion</h2>
-      </div>
-    </div>
+  <div>
+    <h2>Guide&nbspphotographique&nbspdes&nbsppoacées,<br>cypéracées&nbspet&nbspjuncacées&nbspde&nbspla&nbspRéunion</h2>
   </div>
-  <div style=\"width:5%; float: left; display: inline-block; padding-left: 0.5%;\">
+  <div>
     <button class=\"button\" onclick=\"myFunction()\">?</button>
   </div>
-</div>  
+</div>
   
 <hr>
   
 <div hidden id=\"myDIV\">  
-  
+<br>
 <p style = \"font-size:17px;\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
 <p style = \"font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
@@ -596,7 +643,7 @@ width: 100%;
 <div style=\"display:inline-block; width:100%;\">
   <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
   <div class=\"sticky\">
-  <p class=\"p2\">Espèces</p>
+  <p class=\"p2\">Espèces<a href=\"#top\"><img style=\"height; 4vh; width: 4vh;\" src=\"images/rungrass3.png\"></a></p>
   </div>
   <p style = \"color:black;font-size:17px;\">",genus(),"
   </p>
@@ -604,7 +651,7 @@ width: 100%;
   <div style=\"width:84%; float: left; display: inline-block; padding-left: 1.5%;\">
 
 <div class=\"species\" style=\"margin-top: 0px;\">
-<p class=\"p2\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN - CPIE Mascarin</span><span class=\"flore\" style=\"float:right;\">Famille</span>
+<p class=\"p2\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN-CPIE Mascarin</span><span class=\"flore\" style=\"float:right;\">Famille</span>
 </p>
 </div>
 "))
@@ -633,13 +680,22 @@ species_links<-function(x,i){
 
 species_header<-function(x,i){
   cat(paste0(
- "<div id=\"",x$sp[i],"\" class=\"species\">
-    <p class=\"p2\"><span class=\"p2\">
-      ",x$sp[i],"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>&#32&#32<span class=\"flore\">",gsub(" ","&nbsp",x$flore[i]),"</span>","&#32&#32<span class=\"flore\">",gsub(" ","&nbsp",x$index[i]),"</span>","<span class=\"flore\" style=\"float: right; margin-top: 20px;\">",species_links(x,i),x$family[i],"</span>
-    </p>
-   </div>  
+    "<div id=\"",x$sp[i],"\" class=\"headersp\">
+       <div class=\"inner\">
+           <span class=\"p2\">",x$sp[i],"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
+           </span>
+       </div>
+       <div class=\"inner\">
+        <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i])),"</span>
+       </div>
+       <div class=\"inner\">
+       <span class=\"flore\">",species_links(x,i),x$family[i],"</span>
+       </div>
+     </div>  
  "))
 }
+
+
 
 species_photo<-function(x,i){
   if(!is.na(x$large[i])){
@@ -729,16 +785,16 @@ cat("
     var span = document.getElementsByClassName(\"close\")[0];
     
     span.onclick = function() {
-    modal.style.display = \"none\";
+      modal.style.display = \"none\";
     }
     
     function myFunction() {
-  var x = document.getElementById(\"myDIV\");
-  if (x.style.display === \"none\") {
-    x.style.display = \"block\";
-  } else {
-    x.style.display = \"none\";
-  }
+      var x = document.getElementById(\"myDIV\");
+      if (x.style.display === \"none\") {
+        x.style.display = \"block\";
+      } else {
+      x.style.display = \"none\";
+    }
   
 }
     
