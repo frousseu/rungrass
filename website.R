@@ -11,6 +11,8 @@ library(jsonlite)
 library(scales)
 library(terra)
 
+source("https://raw.githubusercontent.com/frousseu/FRutils/master/R/colo.scale.R")
+
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
 
@@ -189,12 +191,19 @@ if(FALSE){
   l<-lapply(lf,rast)
   r<-do.call("merge",l)
   crs(r)<-"+proj=utm +zone=40 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # proj of source
-  r<-focal(r,9,mean) # smooth pixels and look
+  r<-focal(r,7,mean) # smooth pixels and look
   slope <- terrain(r, "slope", unit="radians")
   aspect <- terrain(r, "aspect", unit="radians")
-  hill <- shade(slope, aspect, 30, 270)
+  hill <- shade(slope, aspect, 40, 270)
   hill<-crop(hill,st_transform(st_buffer(run,dist=3000),crs(r)))
   hill<-mask(hill,vect(st_transform(run,crs(r))))
+  #alt<-mask(r,vect(st_transform(run,crs(r))))
+  #plot(hill,col=grey(seq(0.05,1,length.out=100)),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
+  #plot(alt, col=adjustcolor(colo.scale(1:100,c("grey80","lightgoldenrod","lightgoldenrod2","green4","darkgreen","brown4","grey20")),0.25), add=TRUE)
+  
+  
+  
+  
   
   ### locs
   mult<-abs(diff(st_bbox(run)[c(1,3)])/diff(st_bbox(run)[c(2,4)]))
@@ -238,6 +247,17 @@ d$index<-ifelse(is.na(d$index),"-",d$index)
 d$genus<-sapply(strsplit(d$sp," "),"[",1)
 
 
+lsp<-unique(c(d$sp,sapply(strsplit(d$sp," "),function(i){paste0(substr(i[1],1,1),". ",i[2])})))
+for(i in 1:length(lsp)){
+  d$id<-gsub(lsp[i],paste("<span style='font-weight: 800;'>",lsp[i],"</span>"),d$id)  
+}
+
+
+d$id<-ifelse(is.na(d$id),NA,paste0("<p class='p2'>",d$sp,"</p><br><br>",d$id))
+
+
+
+
 #d<-d[order(as.integer(is.na(d$photo)),-as.integer(factor(d$family)),d$sp,d$rank),]
 
 d<-d[order(factor(d$family,levels=c("Poaceae","Cyperaceae","Juncaceae","Excluded")),d$sp,d$rank),]
@@ -267,7 +287,8 @@ cat(paste0("
 <!DOCTYPE html>
   <html>
   <head>
-  <link href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100&display=swap' rel='stylesheet'>
+  <!-- <link rel='preload' href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100&display=swap' rel='stylesheet'> -->
+    <link href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200' rel='stylesheet'>
   <title>
       RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
@@ -286,16 +307,19 @@ cat(paste0("
   background-color: var(--black);
 }
 body .main-container {
-  max-width: 1950px !important;
-  width: 1950px !important;
+  /* max-width: 1950px !important; */
+  /* width: 1950px !important; */
+  /* margin-left: 5vh; */
 }
 body {
-  max-width: 1950px !important;
+  /* max-width: 1950px !important; */
+  margin-left: 2vw;
+  margin-right: 2vw;
 }
 * {
   box-sizing: border-box;
 }
-p {
+p, li, ul {
   padding: 0px;
   margin: 4px;
   font-family: 'Roboto Mono';
@@ -337,8 +361,26 @@ h2 {
   font-size: 60px;
   font-weight: 800;
   font-family:'Roboto Mono'; 
+  cursor: pointer;
 }
 .button:hover {
+  opacity: 0.50;
+  filter: alpha(opacity=100);
+}
+.idbutton {
+  background-color: var(--black);
+  border: none;
+  color: var(--white);
+  padding: 0px 0px 0px 0px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 40px;
+  font-weight: 1200;
+  font-family:'Roboto Mono'; 
+  cursor: pointer;
+}
+.idbutton:hover {
   opacity: 0.50;
   filter: alpha(opacity=100);
 }
@@ -360,6 +402,11 @@ a {
 .atoc:hover {
   opacity: 0.50;
   filter: alpha(opacity=100);
+}
+.About {
+display: none;
+margin-left: 13vw;
+margin-right: 13vw;
 }
 .flore {
   color: var(--gray);
@@ -395,7 +442,7 @@ a {
   background: blue;
 }
 .img2 {
-  height:200px;
+  height:190px;
   width:14.26%;
   object-fit:cover;
   padding: 1px; /* 2px */
@@ -461,7 +508,7 @@ hr {
 }
 
 /* The Modal (background) */
-.modal {
+.modal, .idmodal {
 display: none; /* Hidden by default */
 position: fixed; /* Stay in place */
 z-index: 1; /* Sit on top */
@@ -476,7 +523,7 @@ background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
 }
 
 /* Modal Content (image) */
-.modal-content {
+.modal-content, .idmodal-content {
 margin: auto;
 display: block;
 width: 70%;
@@ -510,6 +557,17 @@ height: 42px;
 font-family: 'Roboto Mono';
 }
 
+#idtips {
+margin: auto;
+display: block;
+width: 50%;
+max-width: 50%;
+text-align: center;
+color: #ccc;
+padding: 10px 0;
+font-family: 'Roboto Mono';
+}
+
 div.sticky {
   position: -webkit-sticky;
   position: sticky;
@@ -531,7 +589,7 @@ div.sticky2 {
 }
 
 /* Add Animation */
-.modal-content, #caption, #link {  
+.modal-content, .idmodal-content, #caption, #link {  
 -webkit-animation-name: zoom;
 -webkit-animation-duration: 0.3s;
 animation-name: zoom;
@@ -549,7 +607,7 @@ to {transform:scale(1)}
 }
 
 /* The Close Button */
-.close {
+.close, .idclose {
 position: absolute;
 top: 15px;
 right: 35px;
@@ -560,7 +618,7 @@ transition: 0.3s;
 }
 
 .close:hover,
-.close:focus {
+.close:focus, .idclose:hover, .idclose:focus {
 color: #bbb;
 text-decoration: none;
 cursor: pointer;
@@ -568,7 +626,7 @@ cursor: pointer;
 
 /* 100% Image Width on Smaller Screens */
 @media only screen and (max-width: 700px){
-.modal-content {
+.modal-content, .idmodal-content {
 width: 100%;
 }
 }
@@ -628,17 +686,93 @@ width: 100%;
   
 <hr>
   
-<div hidden id=\"myDIV\">  
+<div class=\"About\" id=\"About\">  
 <br>
+
+<h2>Présentation</h2><br><br>
+<div>
+  <button class=\"button\" style=\"display: inline-block; float: right;\" onclick=\"myFunction()\">x</button>
+</div>
 <p style = \"font-size:17px;\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
   
 <p style = \"font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
 
 <p style = \"font-size:17px;\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
 
-<hr>
+<h2>Identification +</h2><br><br>
+
+<p style = \"font-size:17px;\">
+Pour quelques espèces, les traits distinctifs et l'aspect général de la plante sont décrits set des trucs sont donnés pour distinguer des espèces semblables pouvant être confondues avec l'espèce en question.  Ces descriptions sont données à titre indicatif seulement et on pour but de faciliter l'identification et la reconnaissance des différentes espèces et non de fournir une description exhaustive. Les descriptions sont majoritairement basées sur mes observations personnelles et elles sont parfois fortement inspirées des descriptions et des clés d'identification fournies dans la Flore des Mascareignes ainsi que dans d'autres ouvrages comme AusGrass2 (voir plus bas), le guide <i>Identification Guide to southern African Grass</i>(Fish, Mashau, Moeaha et Nembudani, 2015) ou Graminées des pâturages et des cultures à Madagascar (Bosser, 1969). Pour beaucoup d'espèces, mon expérience est encore beaucoup trop limitée (et souvent inexistante!) pour fournir une description.
+</p><br><br>
+
+<h2>Occurrences<img style=\"height: 50px; padding: 0px;\" src=\"images/Cyperus_javanicus.png\"></h2><br><br>
+
+<p style = \"font-size:17px;\">
+L'objectif premier des cartes de distribution présentées ici est de donner une idée approximative de l'abondance et de la répartition des espèces à travers l'île. En aucun cas, ces occurrences doivent être interprétées comme étant exhaustives, précises ou représentatives de la répartition exacte des espèces. Lors de l'interprétation de ces cartes, il faut garder en tête que:
+<br><br>
+&nbsp&nbsp&nbsp- les localisations peuvent être très imprécises<br>
+&nbsp&nbsp&nbsp- certaines localisations sont rapportées à une grille de faible résolution<br>
+&nbsp&nbsp&nbsp- les identifications peuvent être erronées<br>
+&nbsp&nbsp&nbsp- les mentions peuvent être historiques<br>
+&nbsp&nbsp&nbsp- certaines espèces plus difficiles à identifier, à trouver ou d'intérêt moindre peuvent être sous-rapportées<br>
+&nbsp&nbsp&nbsp- l'effort variable des observateurs ou d'échantillonnage d'un endroit à l'autre de l'île est susceptible d'affecter la répartition apparente<br>
+&nbsp&nbsp&nbsp- pour diverses raisons, les mentions de certaines espèces peuvent ne pas avoir été intégrées aux base de donnnées utilisées pour récolter les occurrences<br>
+&nbsp&nbsp&nbsp- etc.<br>
+<br>
+Malgré ces précautions à prendre, je crois que ces cartes demeurent généralement utiles pour se faire une idée de la répartition des différentes espèces. Par exemple, Holcus lanatus et Nastus borbonicus sont deux espèces plutôt abondantes dans les hauts. Scleria sieberi est davantage retrouvée dans les forêts humides de l'est de l'île, alors que Heteropogon contortus est davantage retrouvé dans les milieux secs de l'ouest. En général, plus il y a d'occurrences, plus l'espèce est facile à observer. Plusieurs espèces n'ont aucune mention ce qui peut indiquer qu'elles sont rares, localisées, difficiles à identifier, négligées, historiquement présentes sur l'île ou tout simplement qu'aucune observation n'a été intégrée à iNaturalist ou a GBIF. 
+<br><br>
+Les données d'occurences illustrées sur ces cartes proviennent de GBIF (voir plus bas) et des observations de niveau recherche effectuées sur iNaturalist. J'y ai également intégré mes observations personnelles déposées sur iNaturalist. À noter qu'un certaine portion des observations effectuées avec <a target=\"_blank\" href=\"https://plantnet.org/\">PlantNet</a> se<a target=\"_blank\" href=\"https://plantnet.org/2020/08/06/vos-donnees-plntnet-integrees-gbif/\"> retrouveront également sur GBIF</a> et seront donc représentées ici. <a target=\"_blank\" href=\"https://www.gbif.org/dataset/14d5676a-2c54-4f94-9023-1e8dcd822aa0\">Les observations dont l'identification est uniquement basée sur l'algorithme de reconnaissance automatisée</a> ont toutefois été éliminées.
+<br><br>
+Pour beaucoup d'espèces, plusieurs noms ont été ou sont couramment utilisés ce qui peut complexifier les requêtes cherchant à récolter l'ensemble des mentions pour une espèce donnée. Voir la section identification pour chaque espèce pour la liste des noms utilisés pour récolter les occurrences de l'espèce.
+</p><br><br>
+
+<h2>Liens externes</h2><br><br>
+
+<a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">
+  <img style=\"height: 30px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
+</a>
+<p style = \"font-size:17px;\">
+<a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">L'Index taxonomique de la flore vasculaire de La Réunion</a> produit par le CBN-CPIE Mascarin contient plusieurs informations sur les espèces présentées ici et a permis détablir la liste des espèces présentes sur l'île. Il contient notamment le statut de chaque espèce sur l'île (endémique, indigène, exotique, envahissante, cryptogène, etc.), les noms vernaculaires et les noms locaux, etc. La section PLUS D'INFOS est à consulter pour l'historique et le niveau de connaissance de chaque espèce sur l'ile.
+</p><br><br>
+
+<a target=\"_blank\" href=\"http://atlas.borbonica.re\">
+  <img style=\"height: 32px; padding: 0px;\" src=\"images/borbonica.ico\">
+</a>
+<p style = \"font-size:17px;\">
+<a href=\"http://atlas.borbonica.re\" target=\"_blank\">Borbonica</a> est le portail d'accès aux données sur la faune et la flore du SINP à La Réunion (Système d'Information de l'iNventaire du Patrimoine naturel de La Réunion (SINP 974)) . Il est administré par la DEAL et le Parc national de La Réunion. L'atlas présente notamment des synthèses par espèce décrivant les occurrences, les habitats, la phénologie, la synonymie, etc. Les liens pour chaque espèce renvoient vers ces fiches lorsque celles-ci sont disponibles. Souvent, les occurrences retrouvées sur Borbonica sont plus complètes que les occurrences illustrées ici, car les données présentées par Borbonica sont moins ouvertement accessibles que les données disponibles sur iNaturalist ou GBIF.
+</p><br><br>
+
+<a target=\"_blank\" href=\"https://powo.science.kew.org/\">
+  <img style=\"height: 25px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+</a>
+<p style = \"font-size:17px;\">
+<a href=\"https://powo.science.kew.org/\" target=\"_blank\">POWO</a> (<i>Plants of the World Online</i>) est un programme du <i>Royal Botanical Garden, Kew</i> cherchant à rendre disponible l'ensemble des données numériques disponibles sur la flore mondiale. On y retrouve notamment des descriptions, des photos, des renseignements taxonomiques et des cartes de répartition pour la majorité de la flore vasculaire. Les liens pour chaque espèce renvoient vers les pages pour chaque espèce.
+</p><br><br>
+
+<a target=\"_blank\" href=\"https://www.gbif.org/fr/\">
+  <img style=\"height: 26px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
+</a>
+<p style = \"font-size:17px;\">
+<a href=\"https://www.gbif.org/fr/\" target=\"_blank\">GBIF</a> (<i>Global Biodiversity Information Facility</i>) est un système mondial d’information sur la biodiversité. Les observations déposées sur iNaturalist ayant une license CC et atteignant le niveau recherche sont régulièrement versées sur GBIF. Les liens pour chaque espèce renvoient vers la page dédiée à chaque taxon. Dans bien des cas, une même espèce peut avoir plusieurs noms et ces noms peuvent être associés à différentes occurrences ou différentes photos. En général, le lien donné ici renvoie vers le nom le plus couramment utilisé pour l'espèce.
+</p><br><br>
+
+<h2>Autres ressources</h2><br><br>
+
+<p style = \"font-size:17px;\">
+L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacarine-Cadetiana</a> développée par le CBN-CPIE Mascarin est une interface permettant de faire des requêtes spatiales et d'étudier les occurrences de la flore réunionnaise.
+</p><br><br>
+
+<p style = \"font-size:17px;\">
+<a href=\"https://www.mi-aime-a-ou.com/flore_ile_reunion.php\" target=\"_blank\">Mi-aime-a-ou</a> est un site d'intérêt général  sur la Réunion et comporte notamment une impressionante quantité d'information sur la flore réunionnaise.
+</p><br><br>
+
+<p style = \"font-size:17px;\">
+<a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">AusGrass2
+</p><br><br>
 
 </div>
+
+<hr>
 
 <div style=\"display:inline-block; width:100%;\">
   <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
@@ -682,7 +816,7 @@ species_header<-function(x,i){
   cat(paste0(
     "<div id=\"",x$sp[i],"\" class=\"headersp\">
        <div class=\"inner\">
-           <span class=\"p2\">",x$sp[i],"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
+           <span class=\"p2\">",x$sp[i],ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
            </span>
        </div>
        <div class=\"inner\">
@@ -776,6 +910,7 @@ cat("
     console.log(evt);
     modal.style.display = \"block\";
     // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
+    modalImg.src = this.src;
     modalImg.src = this.dataset.src;
     captionText.innerHTML = this.title;
     linkText.innerHTML = '<a class=\"a2\" href=\"' + this.alt + '\" target=\"_blank\">' + this.alt + '</a>' ;
@@ -789,17 +924,66 @@ cat("
     }
     
     function myFunction() {
-      var x = document.getElementById(\"myDIV\");
-      if (x.style.display === \"none\") {
-        x.style.display = \"block\";
+      var x = document.getElementById(\"About\");
+      if (x.style.display == \"block\") {
+        x.style.display = \"none\";
       } else {
-      x.style.display = \"none\";
+        x.style.display = \"block\";
+      }
     }
-  
-}
     
     </script>    
 ")
+
+
+cat("
+<div id=\"idModal\" class=\"idmodal\">
+  <span class=\"idclose\">&times;</span>
+  <div id=\"idtips\"></div>
+</div>     
+")
+
+### Script ####################
+
+cat("
+<script>
+
+
+    // create references to the modal...
+    var idmodal = document.getElementById('idModal');
+    var idspan = document.getElementsByClassName(\"idclose\")[0];
+    // and the link in the modal
+    var idText = document.getElementById(\"idtips\");
+    var buttons = document.getElementsByClassName('idbutton');
+    
+    for (var i = 0; i < buttons.length; i++) {
+      var butt = buttons[i];
+      // and attach our click listener for this image.
+      butt.onclick = function(evt) {
+        console.log(evt);
+        idmodal.style.display = \"block\";
+        idText.innerHTML = this.dataset.id;
+      }
+    }
+    
+    idspan.onclick = function() {
+      idmodal.style.display = \"none\";
+    }
+    
+    idmodal.addEventListener('click',function(){
+      this.style.display=\"none\";
+    })
+    
+    function idFunction() {
+
+    }
+    
+    </script>    
+")
+
+
+
+
 cat("
   </div>
 </div>
