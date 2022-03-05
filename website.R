@@ -253,7 +253,7 @@ for(i in 1:length(lsp)){
 }
 
 
-d$id<-ifelse(is.na(d$id),NA,paste0("<p class='p2'>",d$sp,"</p><br><br>",d$id))
+d$id<-ifelse(is.na(d$id),NA,d$id)
 
 
 
@@ -404,9 +404,14 @@ a {
   filter: alpha(opacity=100);
 }
 .About {
-display: none;
-margin-left: 13vw;
-margin-right: 13vw;
+  display: none;
+  margin-left: 13vw;
+  margin-right: 13vw;
+}
+.ID {
+  display: none;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
 }
 .flore {
   color: var(--gray);
@@ -816,7 +821,7 @@ species_header<-function(x,i){
   cat(paste0(
     "<div id=\"",x$sp[i],"\" class=\"headersp\">
        <div class=\"inner\">
-           <span class=\"p2\">",x$sp[i],ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
+           <span class=\"p2\">",x$sp[i],ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
            </span>
        </div>
        <div class=\"inner\">
@@ -825,7 +830,8 @@ species_header<-function(x,i){
        <div class=\"inner\">
        <span class=\"flore\">",species_links(x,i),x$family[i],"</span>
        </div>
-     </div>  
+     </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\">",x$id[i],"</p></div>")),"
+     
  "))
 }
 
@@ -959,7 +965,7 @@ cat("
     for (var i = 0; i < buttons.length; i++) {
       var butt = buttons[i];
       // and attach our click listener for this image.
-      butt.onclick = function(evt) {
+      buttssssssssss.onclick = function(evt) {
         console.log(evt);
         idmodal.style.display = \"block\";
         idText.innerHTML = this.dataset.id;
@@ -979,6 +985,47 @@ cat("
     }
     
     </script>    
+")
+
+
+
+
+### Script ####################
+
+cat("
+<script>
+
+    var buttons = document.getElementsByClassName('idbutton');
+    var divs = document.getElementsByClassName('ID');
+    
+    for (var i = 0; i < buttons.length; i++) {
+      var butt = buttons[i];
+      var div = divs[i];
+      // and attach our click listener for this image.
+      buttsssssssss.onclick = function(evt) {
+        console.log(evt);
+        if (div.style.display == \"block\") {
+          div.style.display = \"none\";
+        } else {
+          div.style.display = \"block\";
+        }
+      }
+    }
+    
+    
+    function showID(sp) {
+      var x = document.getElementById(sp);
+      if (x.style.display == \"block\") {
+        x.style.display = \"none\";
+      } else {
+        x.style.display = \"block\";
+      }
+    }
+    
+    
+    
+</script>    
+
 ")
 
 
