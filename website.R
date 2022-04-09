@@ -247,9 +247,9 @@ d$index<-ifelse(is.na(d$index),"-",d$index)
 d$genus<-sapply(strsplit(d$sp," "),"[",1)
 
 
-lsp<-unique(c(d$sp,sapply(strsplit(d$sp," "),function(i){paste0(substr(i[1],1,1),". ",i[2])})))
+lsp<-unique(c(d$sp,unlist(lapply(strsplit(d$sp," "),function(i){c(i[1],paste0(substr(i[1],1,1),". ",i[2]))}))))
 for(i in 1:length(lsp)){
-  d$id<-gsub(lsp[i],paste("<span style='font-weight: 800;'>",lsp[i],"</span>"),d$id)  
+  d$id<-gsub(lsp[i],paste0("<span style='font-weight: 800;'>",lsp[i],"</span>"),d$id)  
 }
 
 
@@ -300,8 +300,8 @@ cat(paste0("
 :root {
   --green: #5cbe35; /* #7AB914; */
   --white: #fff8dc; /* #F2F3F4; */
-  --black: #111111;
-  --gray: #fff8dc77;
+  --black: #111111; /* #F2F3F4; */
+  --gray: #fff8dc77; /* #F2F3F4; */
 }
 * {
   background-color: var(--black);
@@ -410,8 +410,6 @@ a {
 }
 .ID {
   display: none;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
 }
 .flore {
   color: var(--gray);
@@ -830,7 +828,7 @@ species_header<-function(x,i){
        <div class=\"inner\">
        <span class=\"flore\">",species_links(x,i),x$family[i],"</span>
        </div>
-     </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\">",x$id[i],"</p></div>")),"
+     </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\"><br>",x$id[i],"<br><br></p></div>")),"
      
  "))
 }
