@@ -814,12 +814,20 @@ species_links<-function(x,i){
   )
 }
 
+uncertain<-function(x){
+  if(x=="Urochloa plantaginea"){return("Urochloa (plantaginea ?)")}  
+  if(x=="Polypogon monspeliensis"){return("Polypogon (monspeliensis ?)")} 
+  if(x=="Urochloa eminii"){return("Urochloa (eminii ?)")} 
+  if(x=="Paspalum mandiocanum"){return("Paspalum (mandiocanum ?)")} 
+  x
+}
+
 
 species_header<-function(x,i){
   cat(paste0(
     "<div id=\"",x$sp[i],"\" class=\"headersp\">
        <div class=\"inner\">
-           <span class=\"p2\">",x$sp[i],ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
+           <span class=\"p2\">",uncertain(x$sp[i]),ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
            </span>
        </div>
        <div class=\"inner\">
