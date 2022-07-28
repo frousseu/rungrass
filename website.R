@@ -770,7 +770,7 @@ L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacari
 </p><br><br>
 
 <p style = \"font-size:17px;\">
-<a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">AusGrass2
+<a href=\"https://ausgrass2.myspecies.info/\" target=\"_blank\">AusGrass2</a>
 </p><br><br>
 
 </div>
@@ -816,8 +816,12 @@ species_links<-function(x,i){
 
 uncertain<-function(x){
   if(x=="Urochloa plantaginea"){return("Urochloa (plantaginea ?)")}  
-  if(x=="Polypogon monspeliensis"){return("Polypogon (monspeliensis ?)")} 
+  if(x=="Polypogon fugax"){return("Polypogon (fugax ?)")} 
   if(x=="Urochloa eminii"){return("Urochloa (eminii ?)")} 
+  if(x=="Eragrostis capensis"){return("Eragrostis (capensis ?)")} 
+  if(x=="Lolium multiflorum"){return("Lolium (multiflorum ?)")} 
+  if(x=="Cyperus flavescens"){return("Cyperus (flavescens ?)")} 
+  if(x=="Cynodon aethiopicus"){return("Cynodon (aethiopicus ?)")} 
   if(x=="Paspalum mandiocanum"){return("Paspalum (mandiocanum ?)")} 
   x
 }
