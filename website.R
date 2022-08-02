@@ -136,8 +136,10 @@ if(FALSE){
       i
     }
   })
-  gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName")]})
+  gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName","datasetKey","coordinateUncertaintyInMeters")]})
   gbif<-do.call("rbind",gbif)
+  # removes TAXREF checklist dataset https://doi.org/10.15468/frrkp9
+  gbif<-gbif[gbif$datasetKey!="6ed43f52-25d1-4d56-a821-63a8564b81f6",]
   gbif<-gbif[-grep("iNaturalist",gbif$datasetName),]
   gbif<-st_as_sf(gbif,coords=c("decimalLongitude","decimalLatitude"),crs=4326)
   gbif<-st_transform(gbif,st_crs(run))
