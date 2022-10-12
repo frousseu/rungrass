@@ -56,7 +56,7 @@ d$attribution[which(is.na(d$attribution))]<-d$credit[which(is.na(d$attribution))
 k<-d$family!="Excluded" & is.na(d$powo)
 sp<-unique(d$sp[k])
 if(length(sp)){
-  powo<-get_pow(sp,ask=FALSE,accepted=TRUE,rank_filter="species")
+  powo<-get_pow(sp,ask=TRUE,accepted=TRUE,rank_filter="species")
   powourl<-data.frame(sp=sp,powo=attributes(powo)$uri)
   d$powo[k]<-powourl$powo[match(d$sp[k],powourl$sp)]
 }
@@ -136,11 +136,22 @@ if(FALSE){
       i
     }
   })
+  gbif<-lapply(gbif,function(i){
+    if(!any(names(i)=="coordinateUncertaintyInMeters")){
+      i$coordinateUncertaintyInMeters<-NA
+      i
+    }else{
+      i
+    }
+  })
   gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName","datasetKey","coordinateUncertaintyInMeters")]})
   gbif<-do.call("rbind",gbif)
   # removes TAXREF checklist dataset https://doi.org/10.15468/frrkp9
   gbif<-gbif[gbif$datasetKey!="6ed43f52-25d1-4d56-a821-63a8564b81f6",]
-  gbif<-gbif[-grep("iNaturalist",gbif$datasetName),]
+  g<-grep("iNaturalist",gbif$datasetName)
+  if(any(g)){
+    gbif<-gbif[-g,]
+  }
   gbif<-st_as_sf(gbif,coords=c("decimalLongitude","decimalLatitude"),crs=4326)
   gbif<-st_transform(gbif,st_crs(run))
   plot(st_geometry(run))
@@ -183,7 +194,9 @@ if(FALSE){
   
   
 ### Maps ####################
-  
+
+# https://geoservices.ign.fr/bdalti  
+    
   ### Shaded terrain
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
   run<-st_buffer(st_buffer(run,100),-100)
@@ -825,6 +838,10 @@ uncertain<-function(x){
   if(x=="Cyperus flavescens"){return("Cyperus (flavescens ?)")} 
   if(x=="Cynodon aethiopicus"){return("Cynodon (aethiopicus ?)")} 
   if(x=="Paspalum mandiocanum"){return("Paspalum (mandiocanum ?)")} 
+  if(x=="Adenochloa hymeniochila"){return("(Adenochloa hymeniochila ?)")} 
+  if(x=="Sporobolus diandrus"){return("Sporobolus (diandrus ?)")} 
+  if(x=="Glyceria declinata"){return("Glyceria (declinata ?)")} 
+  if(x=="Poa trivialis"){return("Poa (trivialis ?)")}
   x
 }
 
