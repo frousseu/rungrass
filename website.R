@@ -24,7 +24,7 @@ dcsv<-read.csv("C:/Users/God/Documents/rungrass/grasses.csv",sep=";",na.strings=
 
 d$photo<-gsub("/medium.|/small.|/large.","/original.",d$photo)
 
-d<-merge(d,dcsv[,c("sp","photo","attribution","powo","gbif")],all.x=TRUE) # only get attributions
+d<-merge(d,dcsv[,c("sp","photo","attribution","powo","gbif","inatid","inat")],all.x=TRUE) # only get attributions
 d<-d[order(d$sp,d$rank),]
 
 d<-unique(d)
@@ -53,7 +53,12 @@ for(i in w){ # looping is better cause sometimes it times-out
 d$attribution[which(is.na(d$attribution))]<-d$credit[which(is.na(d$attribution))]
 
 ### POWO links #################################
+d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:416623-1"
+d$powo[d$sp=="Cyperus dubius"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:304357-1"
+d$powo[d$sp=="Paspalum conjugatum"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30011315-2"
+d$powo[d$sp=="Urochloa distachya"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:426250-1"
 k<-d$family!="Excluded" & is.na(d$powo)
+
 sp<-unique(d$sp[k])
 if(length(sp)){
   powo<-get_pow(sp,ask=TRUE,accepted=TRUE,rank_filter="species")
@@ -61,7 +66,6 @@ if(length(sp)){
   d$powo[k]<-powourl$powo[match(d$sp[k],powourl$sp)]
 }
 #sp<-unique(d$sp[d$family!="Excluded" & is.na(d$powo)]) # manually replace link
-#d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:416623-1"
 
 ### GBIF links ##################################
 k<-d$family!="Excluded" & is.na(d$gbif)
@@ -82,6 +86,27 @@ if(length(sp)){
 # manually correct certain links not going to the right taxon
 d$gbif[d$sp=="Cyperus involucratus"]<-paste0("https://www.gbif.org/fr/species/",2714166)
 
+### iNat links ##################################
+
+k<-d$family!="Excluded" & is.na(d$inat)
+if(any(k)){
+  sp<-unique(d$sp[k])
+  ids<-sapply(sp,function(i){
+    print(i)
+    x<-fromJSON(paste0("https://api.inaturalist.org/v1/taxa?q=\"",gsub(" ","%20",i),"\""))$results$id[1]
+    if(is.null(x)){
+      NA
+    }else{
+      x  
+    }
+  })
+  ###merge(,data.frame(sp=sp
+
+  d$inatid[k]<-ids[match(d$sp[k],sp)]
+  d$inat<-ifelse(is.na(d$inatid),NA,paste0("https://www.inaturalist.org/observations?place_id=8834&taxon_id=",d$inatid))
+}
+
+#d$inatid<-sapply(d$inatid,function(i){if(is.null(i)){NA}else{i}})
 
 ### OCCS #######################
 
@@ -232,9 +257,11 @@ if(FALSE){
     #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
     plot(hill,col=grey(seq(0.3,1,length.out=100)),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
     if(nrow(x)>0){
-      plot(st_geometry(x),pch=16,col=alpha("tomato4",0.7),cex=2,xpd=TRUE,add=TRUE)
+      #plot(st_geometry(x),pch=16,col=alpha("tomato4",0.7),cex=2,xpd=TRUE,add=TRUE)
+      plot(st_geometry(x),pch=21,bg=adjustcolor("#43CD80",0.75),col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
     }
     dev.off()
+    #file.show(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
     cat("\r",paste(i,length(sp),sep=" / "))
   }
   
@@ -313,7 +340,7 @@ cat(paste0("
   <style>
 
 :root {
-  --green: #5cbe35; /* #7AB914; */
+  --green: #43cd80; /* #5cbe35; */
   --white: #fff8dc; /* #F2F3F4; */
   --black: #111111; /* #F2F3F4; */
   --gray: #fff8dc77; /* #F2F3F4; */
@@ -328,8 +355,8 @@ body .main-container {
 }
 body {
   /* max-width: 1950px !important; */
-  margin-left: 2vw;
-  margin-right: 2vw;
+  margin-left: 4vw;
+  margin-right: 4vw;
 }
 * {
   box-sizing: border-box;
@@ -428,7 +455,7 @@ a {
 }
 .flore {
   color: var(--gray);
-  font-size:20px;
+  font-size: 16px;
   font-family:'Roboto Mono'; 
   font-weight: 100;
   display: inline-block;
@@ -478,6 +505,9 @@ a {
   font-size:30px;
   font-family:'Roboto Mono'; 
   font-weight: 100;
+  text-decoration: underline;
+  text-decoration-color: var(--white);
+  text-decoration-thickness: 1px;
 }
 .scroller {
   scrollbar-width: thin;
@@ -669,6 +699,7 @@ width: 100%;
   justify-content: space-between; /* switched from default (flex-start, see below) */
   align-content: bottom;
   align-items: bottom;
+  padding-top: 40px;
   /* background-color: #111; */
 }
 
@@ -819,11 +850,14 @@ species_links<-function(x,i){
      <a target=\"_blank\" href=\"",x$borbonica[i],"\">
        <img style=\"height: 21px; padding: 0px;\" src=\"images/borbonica.ico\">
      </a>
-     <a target=\"_blank\" href=\"",x$powo[i],"\">
-       <img style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+     <a target=\"_blank\" href=\"",x$inat[i],"\">
+       <img style=\"height: 18px; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
      </a>
      <a target=\"_blank\" href=\"",x$gbif[i],"\">
        <img style=\"height: 18px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
+     </a>
+     <a target=\"_blank\" href=\"",x$powo[i],"\">
+       <img style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
      </a>
      </a>&nbsp;&nbsp;"
   )
@@ -850,14 +884,11 @@ species_header<-function(x,i){
   cat(paste0(
     "<div id=\"",x$sp[i],"\" class=\"headersp\">
        <div class=\"inner\">
-           <span class=\"p2\">",uncertain(x$sp[i]),ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"&nbsp<img style=\"height: 50px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\">
+           <span class=\"p2\">",uncertain(x$sp[i]),ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"
            </span>
        </div>
        <div class=\"inner\">
-        <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i])),"</span>
-       </div>
-       <div class=\"inner\">
-       <span class=\"flore\">",species_links(x,i),x$family[i],"</span>
+       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img style=\"height: 80px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>
        </div>
      </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\"><br>",x$id[i],"<br><br></p></div>")),"
      
