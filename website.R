@@ -57,6 +57,7 @@ d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni
 d$powo[d$sp=="Cyperus dubius"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:304357-1"
 d$powo[d$sp=="Paspalum conjugatum"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30011315-2"
 d$powo[d$sp=="Urochloa distachya"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:426250-1"
+d$powo[d$sp=="Aristida sp"]<-""
 k<-d$family!="Excluded" & is.na(d$powo)
 
 sp<-unique(d$sp[k])
@@ -103,10 +104,24 @@ if(any(k)){
   ###merge(,data.frame(sp=sp
 
   d$inatid[k]<-ids[match(d$sp[k],sp)]
-  d$inat<-ifelse(is.na(d$inatid),NA,paste0("https://www.inaturalist.org/observations?place_id=8834&taxon_id=",d$inatid))
+  d$inat<-ifelse(is.na(d$inatid),NA,paste0("https://www.inaturalist.org/observations?subview=grid&place_id=8834&taxon_id=",d$inatid))
 }
 
 #d$inatid<-sapply(d$inatid,function(i){if(is.null(i)){NA}else{i}})
+
+### MNHN, Tropicos links ##########################################
+
+d$mnhn<-paste0("https://science.mnhn.fr/institution/mnhn/collection/p/item/list?scientificName=",tolower(gsub(" ","+",d$sp)))
+d$tropicos<-paste0("https://tropicos.org/name/Search?name=",tolower(gsub(" ","%20",d$sp)))
+
+#library(magick)
+#im<-image_read("C:/Users/God/Downloads/tropicos_trans.png")
+#im<-image_crop(im,gravity="west","80")
+#im<-image_trim(im)
+#im
+#image_write(im,"C:/Users/God/Downloads/tropicos.png")
+
+
 
 ### OCCS #######################
 
@@ -169,16 +184,31 @@ if(FALSE){
       i
     }
   })
-  gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName","datasetKey","coordinateUncertaintyInMeters")]})
+  gbif<-lapply(gbif,function(i){
+    if(!any(names(i)=="nameAccordingTo")){
+      i$nameAccordingTo<-NA
+      i
+    }else{
+      i
+    }
+  })
+  gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName","datasetKey","coordinateUncertaintyInMeters","nameAccordingTo")]})
   gbif<-do.call("rbind",gbif)
-  # removes TAXREF checklist dataset https://doi.org/10.15468/frrkp9
-  gbif<-gbif[gbif$datasetKey!="6ed43f52-25d1-4d56-a821-63a8564b81f6",]
+  ### removes TAXREF checklist dataset https://doi.org/10.15468/frrkp9
+  #gbif<-gbif[gbif$datasetKey!="6ed43f52-25d1-4d56-a821-63a8564b81f6",]
+  #gbif<-gbif[gbif$datasetKey!="91aa3d5b-6f77-4135-a823-cef438a60dfa",]
+  g<-intersect(grep("TAXREF",gbif$nameAccordingTo),grep("Checklist",gbif$nameAccordingTo))
+  if(any(g)){
+    gbif<-gbif[-g,]
+  }
+  ### removes iNat RG obs
   g<-grep("iNaturalist",gbif$datasetName)
   if(any(g)){
     gbif<-gbif[-g,]
   }
   gbif<-st_as_sf(gbif,coords=c("decimalLongitude","decimalLatitude"),crs=4326)
   gbif<-st_transform(gbif,st_crs(run))
+  gbif$source<-"gbif"
   plot(st_geometry(run))
   plot(st_geometry(gbif),add=TRUE,pch=1)
 
@@ -212,8 +242,9 @@ if(FALSE){
   #plot(st_geometry(run))
   #plot(st_geometry(inat),add=TRUE,pch=1)
   inat<-inat[inat$grade=="research" | inat$user=="frousseu",]
+  inat$source<-"inat"
   
-  occs<-rbind(gbif[,"sp"],inat[,"sp"])
+  occs<-rbind(gbif[,c("sp","source")],inat[,c("sp","source")])
   #plot(st_geometry(run))
   #plot(st_geometry(occs),add=TRUE,pch=1)
   
@@ -242,7 +273,10 @@ if(FALSE){
   #plot(alt, col=adjustcolor(colo.scale(1:100,c("grey80","lightgoldenrod","lightgoldenrod2","green4","darkgreen","brown4","grey20")),0.25), add=TRUE)
   
   
-  
+  pcol<-list(
+    inat=adjustcolor("#43CD80",0.75),
+    gbif=adjustcolor("goldenrod1",0.65)
+  )
   
   
   ### locs
@@ -256,10 +290,15 @@ if(FALSE){
     par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
     #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
     plot(hill,col=grey(seq(0.3,1,length.out=100)),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
-    if(nrow(x)>0){
-      #plot(st_geometry(x),pch=16,col=alpha("tomato4",0.7),cex=2,xpd=TRUE,add=TRUE)
-      plot(st_geometry(x),pch=21,bg=adjustcolor("#43CD80",0.75),col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
+    xgbif<-x[x$source=="gbif",]
+    if(nrow(xgbif)>0){
+      plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
     }
+    xinat<-x[x$source=="inat",]
+    if(nrow(xinat)>0){
+      plot(st_geometry(xinat),pch=21,bg=pcol$inat,col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
+    }
+    mtext(side=3,adj=0.97,line=-1.75,text="En",col=grey(0.85),cex=1.5,font=1,xpd=TRUE)
     dev.off()
     #file.show(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
     cat("\r",paste(i,length(sp),sep=" / "))
@@ -291,7 +330,7 @@ d$genus<-sapply(strsplit(d$sp," "),"[",1)
 
 lsp<-unique(c(d$sp,unlist(lapply(strsplit(d$sp," "),function(i){c(i[1],paste0(substr(i[1],1,1),". ",i[2]))}))))
 for(i in 1:length(lsp)){
-  d$id<-gsub(lsp[i],paste0("<span style='font-weight: 800;'>",lsp[i],"</span>"),d$id)  
+  d$id<-gsub(lsp[i],paste0("<span style='font-style: italic;'>",lsp[i],"</span>"),d$id)  
 }
 
 
@@ -384,7 +423,7 @@ h2 {
   color: var(--white);
   font-size: 30px;
   padding-left:10px;
-  padding-top:0px;
+  padding-top:10px;
   padding-bottom:0px;
   font-family:'Roboto Mono'; 
   font-weight: 50;
@@ -410,17 +449,18 @@ h2 {
   filter: alpha(opacity=100);
 }
 .idbutton {
-  background-color: var(--black);
+  background: none;
   border: none;
   color: var(--white);
   padding: 0px 0px 0px 0px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 40px;
+  font-size: 30px;
   font-weight: 1200;
   font-family:'Roboto Mono'; 
   cursor: pointer;
+  height:10px;
 }
 .idbutton:hover {
   opacity: 0.50;
@@ -502,13 +542,21 @@ a {
 }
 .p2 {
   color: var(--white);
-  font-size:30px;
+  font-size: 30px;
   font-family:'Roboto Mono'; 
   font-weight: 100;
   text-decoration: underline;
   text-decoration-color: var(--white);
   text-decoration-thickness: 1px;
 }
+.p3 {
+  background-color: lightgreen;
+  position: relative;
+  top: 0px; 
+  left: 0px;
+}
+
+
 .scroller {
   scrollbar-width: thin;
 }
@@ -819,9 +867,11 @@ L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacari
 <a href=\"https://ausgrass2.myspecies.info/\" target=\"_blank\">AusGrass2</a>
 </p><br><br>
 
+<hr>
+
 </div>
 
-<hr>
+
 
 <div style=\"display:inline-block; width:100%;\">
   <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
@@ -843,24 +893,33 @@ L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacari
   
 
 species_links<-function(x,i){
-  paste0(
-    "<a target=\"_blank\" href=\"",x$cbnm[i],"\">
+  res<-paste0(
+    ifelse(any(grep("=NA",x$cbnm[i])),"",
+    paste0("<a target=\"_blank\" href=\"",x$cbnm[i],"\">
        <img style=\"height: 18px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
-     </a>
-     <a target=\"_blank\" href=\"",x$borbonica[i],"\">
+     </a>")),
+    ifelse(any(grep("/NA",x$borbonica[i])),"",
+     paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
        <img style=\"height: 21px; padding: 0px;\" src=\"images/borbonica.ico\">
-     </a>
-     <a target=\"_blank\" href=\"",x$inat[i],"\">
+     </a>")),
+     "<a target=\"_blank\" href=\"",x$inat[i],"\">
        <img style=\"height: 18px; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
      </a>
      <a target=\"_blank\" href=\"",x$gbif[i],"\">
        <img style=\"height: 18px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
+     </a>
+     <a target=\"_blank\" href=\"",x$mnhn[i],"\">
+       <img style=\"height: 18px; padding: 0px;\" src=\"images/mnhn.png\">
+     </a>
+     <a target=\"_blank\" href=\"",x$tropicos[i],"\">
+       <img style=\"height: 18px; padding: 0px;\" src=\"images/tropicos.png\">
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
        <img style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
      </a>
      </a>&nbsp;&nbsp;"
   )
+  res
 }
 
 uncertain<-function(x){
@@ -876,6 +935,8 @@ uncertain<-function(x){
   if(x=="Sporobolus diandrus"){return("Sporobolus (diandrus ?)")} 
   if(x=="Glyceria declinata"){return("Glyceria (declinata ?)")} 
   if(x=="Poa trivialis"){return("Poa (trivialis ?)")}
+  if(x=="Panicum miliaceum"){return("Panicum (miliaceum ?)")}
+  if(x=="Aristida sp"){return("Aristida (sp. ?)")}
   x
 }
 
@@ -884,8 +945,8 @@ species_header<-function(x,i){
   cat(paste0(
     "<div id=\"",x$sp[i],"\" class=\"headersp\">
        <div class=\"inner\">
-           <span class=\"p2\">",uncertain(x$sp[i]),ifelse(is.na(x$id[i]),"",paste0("&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">+</button>&nbsp")),"
-           </span>
+           <span class=\"p2\">",uncertain(x$sp[i]),"</span>"
+           ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">ID&#8628</button>&nbsp")),"
        </div>
        <div class=\"inner\">
        <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img style=\"height: 80px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>
@@ -1072,7 +1133,6 @@ cat("
       }
     }
     
-    
     function showID(sp) {
       var x = document.getElementById(sp);
       if (x.style.display == \"block\") {
@@ -1081,8 +1141,6 @@ cat("
         x.style.display = \"block\";
       }
     }
-    
-    
     
 </script>    
 

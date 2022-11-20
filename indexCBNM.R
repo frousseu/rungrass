@@ -21,7 +21,7 @@ m<-apply(cbind(match(x$sp,d$sp),match(x$flore,d$sp)),1,function(i){sort(i)[1]})
 x$sp[is.na(m)]
 write(paste(d$"CODE TAXREF"[m],collapse="\n"),"C:/Users/God/Downloads/crap.txt")
 
-### espèce non acceptées
+### esp?ce non accept?es
 rejected<-sort(d$sp[!d$sp%in%c(x$sp,x$flore)])
 write(paste(rejected,collapse="\n"),"C:/Users/God/Downloads/crap.txt")
 
@@ -32,4 +32,20 @@ excluded<-paste(sapply(seq_along(rejected),function(i){
   paste0("<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",taxref[i]),"\" target=\"_blank\">",rejected[i],"</a>")
 }),collapse=", ")
 cat(excluded)
+
+
+###########################
+### Get status
+
+x<-as.data.frame(read_excel("C:/Users/God/Downloads/ITR_2020-1_Diffusion_Externe/ITR_2020-1_Diffusion_Externe/ITR-2020-1-MAJ-20201204_Diff-Externe.xlsx",skip=5))#range="A6:K1116"))
+x<-x[,c("CODE TAXREF","ENDÉMICITÉ","STATUT GÉNÉRAL RÉUNION","STATUT SPONTANÉ RÉUNION")]
+d<-as.data.frame(read_excel("C:/Users/God/Documents/rungrass/grasses.xlsx"))
+
+m<-match(d$taxref,x$`CODE TAXREF`)
+cbind(d,x[m)
+
+d<-merge(d,x,by.x="taxref",by.y="CODE TAXREF",all.x=TRUE)
+
+
+
 
