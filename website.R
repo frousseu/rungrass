@@ -140,7 +140,7 @@ if(FALSE){
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
   run<-st_buffer(st_geometry(run),50)
   k<-d$family!="Excluded"
-  sp<-unique(d$sp[k])[1:2]
+  sp<-unique(d$sp[k])#[1:2]
   key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
   m<-match(sp,d$sp)
   other<-d$other[m]
@@ -297,7 +297,7 @@ if(FALSE){
   mult<-abs(diff(st_bbox(run)[c(1,3)])/diff(st_bbox(run)[c(2,4)]))
   mult<-abs(diff(ext(r2)[c(1,2)])/diff(ext(r2)[c(3,4)]))
   k<-d$family!="Excluded"
-  sp<-unique(d$sp[k])[1:10]
+  sp<-unique(d$sp[k])#[1:10]
   occs2<-st_transform(occs,crs(hill))
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
     x<-occs2[which(occs2$sp==sp[i]),]
@@ -307,7 +307,7 @@ if(FALSE){
     par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
     #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
     plot(hill2,col=grey(0:100/100),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
-    plot(r2,col=adjustcolor(pcol$colgrad,0.30),legend=FALSE,mar=c(0,0,0,0),add=TRUE,maxcell=1000000)
+    plot(r2,col=adjustcolor(pcol$colgrad,0.30),legend=FALSE,mar=c(0,0,0,0),axes=FALSE,add=TRUE)
     xgbif<-x[x$source=="gbif",]
     if(nrow(xgbif)>0){
       plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
