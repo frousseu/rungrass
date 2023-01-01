@@ -10,6 +10,7 @@ library(sf)
 library(jsonlite)
 library(scales)
 library(terra)
+library(tidyterra)
 
 source("https://raw.githubusercontent.com/frousseu/FRutils/master/R/colo.scale.R")
 
@@ -57,7 +58,8 @@ d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni
 d$powo[d$sp=="Cyperus dubius"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:304357-1"
 d$powo[d$sp=="Paspalum conjugatum"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30011315-2"
 d$powo[d$sp=="Urochloa distachya"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:426250-1"
-d$powo[d$sp=="Aristida sp"]<-""
+d$powo[d$sp=="Aristida congesta barbicollis"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:389261-1"
+d$powo[d$sp=="Eragrostis tenella insularis"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:413272-4"
 k<-d$family!="Excluded" & is.na(d$powo)
 
 sp<-unique(d$sp[k])
@@ -121,6 +123,9 @@ d$tropicos<-paste0("https://tropicos.org/name/Search?name=",tolower(gsub(" ","%2
 #im
 #image_write(im,"C:/Users/God/Downloads/tropicos.png")
 
+### FNA links ##########################################
+
+d$fna<-paste0("http://floranorthamerica.org/",gsub(" ","_",d$sp))
 
 
 ### OCCS #######################
@@ -135,7 +140,7 @@ if(FALSE){
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
   run<-st_buffer(st_geometry(run),50)
   k<-d$family!="Excluded"
-  sp<-unique(d$sp[k])
+  sp<-unique(d$sp[k])[1:2]
   key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
   m<-match(sp,d$sp)
   other<-d$other[m]
@@ -262,34 +267,47 @@ if(FALSE){
   l<-lapply(lf,rast)
   r<-do.call("merge",l)
   crs(r)<-"+proj=utm +zone=40 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # proj of source
-  r<-focal(r,7,mean) # smooth pixels and look
-  slope <- terrain(r, "slope", unit="radians")
-  aspect <- terrain(r, "aspect", unit="radians")
-  hill <- shade(slope, aspect, 40, 270)
-  hill<-crop(hill,st_transform(st_buffer(run,dist=3000),crs(r)))
-  hill<-mask(hill,vect(st_transform(run,crs(r))))
+  #r<-focal(r,7,mean) # smooth pixels and look
+  r[r<0]<-NA
+  r<-trim(r)
+  r<-crop(r,st_transform(st_buffer(run,dist=3000),crs(r)))
+  r<-mask(r,vect(st_transform(run,crs(r))))
+  #slope <- terrain(r, "slope", unit="radians")
+  #aspect <- terrain(r, "aspect", unit="radians")
+  #hill <- shade(slope, aspect, 40, 270)
+  hill<-shade(terrain(r,"slope",unit="radians"),terrain(r,"aspect",unit="radians"),40,270)
+  r2<-focal(r,7,mean) # smooth pixels and look
+  hill2<-focal(hill,7,mean) # smooth pixels and look
+  #hill<-crop(hill,st_transform(st_buffer(run,dist=3000),crs(r)))
+  #hill<-mask(hill,vect(st_transform(run,crs(r))))
   #alt<-mask(r,vect(st_transform(run,crs(r))))
   #plot(hill,col=grey(seq(0.05,1,length.out=100)),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
   #plot(alt, col=adjustcolor(colo.scale(1:100,c("grey80","lightgoldenrod","lightgoldenrod2","green4","darkgreen","brown4","grey20")),0.25), add=TRUE)
   
   
   pcol<-list(
-    inat=adjustcolor("#43CD80",0.75),
-    gbif=adjustcolor("goldenrod1",0.65)
+    inat=adjustcolor("forestgreen",0.75),
+    gbif=adjustcolor("gold",0.75),
+    #colgrad=grey(seq(0.3,1,length.out=100))
+    colgrad=colo.scale(200,c("grey90","lightgoldenrod","seagreen3","forestgreen","darkgreen","saddlebrown","sienna4","brown"))
   )
   
   
   ### locs
   mult<-abs(diff(st_bbox(run)[c(1,3)])/diff(st_bbox(run)[c(2,4)]))
+  mult<-abs(diff(ext(r2)[c(1,2)])/diff(ext(r2)[c(3,4)]))
   k<-d$family!="Excluded"
-  sp<-unique(d$sp[k])
+  sp<-unique(d$sp[k])[1:10]
   occs2<-st_transform(occs,crs(hill))
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
     x<-occs2[which(occs2$sp==sp[i]),]
+    
+    ### small
     png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"),height=100,width=100*mult,units="px")
     par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
     #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
-    plot(hill,col=grey(seq(0.3,1,length.out=100)),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
+    plot(hill2,col=grey(0:100/100),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
+    plot(r2,col=adjustcolor(pcol$colgrad,0.30),legend=FALSE,mar=c(0,0,0,0),add=TRUE,maxcell=1000000)
     xgbif<-x[x$source=="gbif",]
     if(nrow(xgbif)>0){
       plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
@@ -300,7 +318,25 @@ if(FALSE){
     }
     mtext(side=3,adj=0.97,line=-1.75,text="En",col=grey(0.85),cex=1.5,font=1,xpd=TRUE)
     dev.off()
-    #file.show(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
+    
+    ### large
+    png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"),width=8,height=7,units="in",res=500)
+    par(bg="grey15")
+    plot(hill,col=grey(0:100/100), legend=FALSE, mar=c(0,0,0,0),maxcell=1000000)
+    plot(r,col=adjustcolor(colo.scale(1:200,pcol$colgrad),0.30),add=TRUE,maxcell=1000000)
+    #plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$gbif,add=TRUE)
+    #plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
+    if(nrow(xgbif)>0){
+      plot(st_geometry(xgbif),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$gbif,add=TRUE)
+    }
+    if(nrow(xinat)>0){
+      plot(st_geometry(xinat),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
+    }
+    dev.off()
+    #file.show("C:/Users/God/Downloads/large_map.png") 
+    
+    
+    
     cat("\r",paste(i,length(sp),sep=" / "))
   }
   
@@ -351,7 +387,14 @@ genus<-function(i){
   l<-lapply(l,function(x){
     x<-unique(x)
     ge<-x$genus[1]
-    sp<-sapply(strsplit(x$sp," "),"[",2)
+    sp<-sapply(strsplit(x$sp," "),function(y){
+      ans<-y[2:length(y)]
+      if(length(ans)>1){
+        paste(substr(ans[1],1,1),". ",ans[2],sep="")
+      }else{
+        ans[1]
+      }
+    })
     ge<-c(ge,x$sp)
     ge1<-ge
     ge1[1]<-ge1[2]
@@ -379,10 +422,10 @@ cat(paste0("
   <style>
 
 :root {
-  --green: #43cd80; /* #5cbe35; */
-  --white: #fff8dc; /* #F2F3F4; */
-  --black: #111111; /* #F2F3F4; */
-  --gray: #fff8dc77; /* #F2F3F4; */
+  --green: #43cd80; /* #43cd80; */
+  --white: #fff8dc; /* #fff8dc; */
+  --black: #111111; /* #111111; */
+  --gray: #fff8dc77; /* #fff8dc77; */
 }
 * {
   background-color: var(--black);
@@ -526,18 +569,32 @@ a {
   display: table;
   background: blue;
 }
-.img2 {
+.imgsp {
   height:190px;
   width:14.26%;
   object-fit:cover;
   padding: 1px; /* 2px */
-  background: #000000; /* #EEEEEE */
+  margin: 0px; /* 2px */
+  background: var(--white); /* #EEEEEE */
   background-origin: content-box;
   cursor: pointer;
   border-radius: 50px;
 }
-.img2:hover {
-  opacity: 0.70;
+.imgsp:hover {
+  opacity: 0.50;
+  filter: alpha(opacity=100);
+}
+.imgmap {
+  height: 80px; 
+  padding: 0px;
+  cursor: pointer;
+}
+.imgmap:hover {
+  opacity: 0.60;
+  filter: alpha(opacity=100);
+}
+.imglink:hover {
+  opacity: 0.50;
   filter: alpha(opacity=100);
 }
 .p2 {
@@ -545,7 +602,7 @@ a {
   font-size: 30px;
   font-family:'Roboto Mono'; 
   font-weight: 100;
-  text-decoration: underline;
+  text-decoration: none;
   text-decoration-color: var(--white);
   text-decoration-thickness: 1px;
 }
@@ -597,7 +654,7 @@ hr {
   background-color: #222; /* var(--gray); */
 }
 
-#img2 {
+#imgsp {
   border-radius: 5px;
   cursor: pointer;
   transition: 0.3s;
@@ -883,10 +940,10 @@ L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacari
   </div>
   <div style=\"width:84%; float: left; display: inline-block; padding-left: 1.5%;\">
 
-<div class=\"species\" style=\"margin-top: 0px;\">
+<!-- <div class=\"species\" style=\"margin-top: 0px;\">
 <p class=\"p2\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN-CPIE Mascarin</span><span class=\"flore\" style=\"float:right;\">Famille</span>
 </p>
-</div>
+</div> -->
 "))
 
 }  
@@ -896,26 +953,29 @@ species_links<-function(x,i){
   res<-paste0(
     ifelse(any(grep("=NA",x$cbnm[i])),"",
     paste0("<a target=\"_blank\" href=\"",x$cbnm[i],"\">
-       <img style=\"height: 18px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
+       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
      </a>")),
     ifelse(any(grep("/NA",x$borbonica[i])),"",
      paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img style=\"height: 21px; padding: 0px;\" src=\"images/borbonica.ico\">
+       <img class=\"imglink\" style=\"height: 21px; padding: 0px;\" src=\"images/borbonica.ico\">
      </a>")),
      "<a target=\"_blank\" href=\"",x$inat[i],"\">
-       <img style=\"height: 18px; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
+       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
      </a>
      <a target=\"_blank\" href=\"",x$gbif[i],"\">
-       <img style=\"height: 18px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
+       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
      </a>
      <a target=\"_blank\" href=\"",x$mnhn[i],"\">
-       <img style=\"height: 18px; padding: 0px;\" src=\"images/mnhn.png\">
+       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"images/mnhn.png\">
      </a>
      <a target=\"_blank\" href=\"",x$tropicos[i],"\">
-       <img style=\"height: 18px; padding: 0px;\" src=\"images/tropicos.png\">
+       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"images/tropicos.png\">
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
-       <img style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+       <img class=\"imglink\" style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+     </a>
+     <a target=\"_blank\" href=\"",x$fna[i],"\">
+       <img class=\"imglink\" style=\"height: 17px; padding: 0px;\" src=\"images/fna.jpg\">
      </a>
      </a>&nbsp;&nbsp;"
   )
@@ -936,7 +996,7 @@ uncertain<-function(x){
   if(x=="Glyceria declinata"){return("Glyceria (declinata ?)")} 
   if(x=="Poa trivialis"){return("Poa (trivialis ?)")}
   if(x=="Panicum miliaceum"){return("Panicum (miliaceum ?)")}
-  if(x=="Aristida sp"){return("Aristida (sp. ?)")}
+  if(x=="Aristida congesta barbicollis"){return("Aristida (congesta barbicollis ?)")}
   x
 }
 
@@ -949,7 +1009,7 @@ species_header<-function(x,i){
            ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">ID&#8628</button>&nbsp")),"
        </div>
        <div class=\"inner\">
-       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img style=\"height: 80px; padding: 0px;\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\"></span>
+       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"images/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\"></span>
        </div>
      </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\"><br>",x$id[i],"<br><br></p></div>")),"
      
@@ -965,7 +1025,7 @@ species_photo<-function(x,i){
     large<-x$photo[i]
   }
   cat(paste0(
-    "<img class=\"img2\" src=\"",gsub("/original.","/small.",x$photo[i]),"\" data-src=\"",large,"\" title=\"",paste(x$attribution[i]),"\" alt=\"",paste(x$obs[i]),"\">"
+    "<img class=\"imgsp\" src=\"",gsub("/original.","/small.",x$photo[i]),"\" data-src=\"",large,"\" title=\"",paste(x$attribution[i]),"\" alt=\"",paste(x$obs[i]),"\">"
   ))
 }
 
@@ -1000,6 +1060,10 @@ invisible(
 
 species_excluded(d$sp[d$family=="Excluded"],d$taxref[d$family=="Excluded"])
 
+
+
+### Script ####################
+
 cat("
 <div id=\"myModal\" class=\"modal\">
   <span class=\"close\">&times;</span>
@@ -1009,23 +1073,17 @@ cat("
 </div>     
 ")
 
-### Script ####################
 
 cat("
 <script>
 
-    // create references to the modal...
-    var modal = document.getElementById('myModal');
-    // to all images -- note I'm using a class!
-    var images = document.getElementsByClassName('img2');
-    // the image in the modal
+    var modalsp = document.getElementById('myModal');
+    var images = document.getElementsByClassName('imgsp');
     var modalImg = document.getElementById(\"img01\");
-    // and the caption in the modal
     var captionText = document.getElementById(\"caption\");
-    // and the link in the modal
     var linkText = document.getElementById(\"link\");
     
-    modal.addEventListener('click',function(){
+    modalsp.addEventListener('click',function(){
     this.style.display=\"none\";
     })
     
@@ -1035,9 +1093,9 @@ cat("
     // and attach our click listener for this image.
     img.onclick = function(evt) {
     console.log(evt);
-    modal.style.display = \"block\";
+    modalsp.style.display = \"block\";
     // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
-    modalImg.src = this.src;
+    <!-- modalImg.src = this.src; -->
     modalImg.src = this.dataset.src;
     captionText.innerHTML = this.title;
     linkText.innerHTML = '<a class=\"a2\" href=\"' + this.alt + '\" target=\"_blank\">' + this.alt + '</a>' ;
@@ -1047,7 +1105,7 @@ cat("
     var span = document.getElementsByClassName(\"close\")[0];
     
     span.onclick = function() {
-      modal.style.display = \"none\";
+      modalsp.style.display = \"none\";
     }
     
     function myFunction() {
@@ -1063,6 +1121,10 @@ cat("
 ")
 
 
+
+
+### Script ####################
+
 cat("
 <div id=\"idModal\" class=\"idmodal\">
   <span class=\"idclose\">&times;</span>
@@ -1070,16 +1132,12 @@ cat("
 </div>     
 ")
 
-### Script ####################
 
 cat("
 <script>
 
-
-    // create references to the modal...
     var idmodal = document.getElementById('idModal');
     var idspan = document.getElementsByClassName(\"idclose\")[0];
-    // and the link in the modal
     var idText = document.getElementById(\"idtips\");
     var buttons = document.getElementsByClassName('idbutton');
     
@@ -1147,6 +1205,62 @@ cat("
 ")
 
 
+### test for map the following
+
+cat("
+<div id=\"mapModal\" class=\"modal\">
+  <span class=\"close\">&times;</span>
+  <img class=\"modal-content\" id=\"map01\">
+</div>     
+")
+
+cat("
+<script>
+
+    var modalcarte = document.getElementById('mapModal');
+    var maps = document.getElementsByClassName('imgmap');
+    var modalMap = document.getElementById(\"map01\");
+    
+    modalcarte.addEventListener('click',function(){
+    this.style.display=\"none\";
+    })
+    
+    for (var i = 0; i < maps.length; i++) {
+    var map = maps[i];
+    // and attach our click listener for this image.
+    map.onclick = function(evt) {
+    console.log(evt);
+    modalcarte.style.display = \"block\";
+    // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
+    modalMap.src = this.dataset.src;
+    }
+    }
+    
+    var span = document.getElementsByClassName(\"close\")[0];
+    
+    span.onclick = function() {
+      modalcarte.style.display = \"none\";
+    }
+    
+    function myFunction() {
+      var x = document.getElementById(\"About\");
+      if (x.style.display == \"block\") {
+        x.style.display = \"none\";
+      } else {
+        x.style.display = \"block\";
+      }
+    }
+    
+    </script>    
+")
+
+
+
+
+
+
+
+
 
 
 cat("
@@ -1159,4 +1273,34 @@ sink()
 close(con)
 
 file.show("C:/Users/God/Documents/rungrass/index.html")
+
+
+
+
+if(FALSE){
+  
+  data("hypsometric_tints_db")
+  cols<-hypsometric_tints_db %>% filter(pal == "utah_1")#"wiki-schwarzwald-cont")
+  cols<-hypsometric_tints_db %>% filter(pal == "utah_1")#"wiki-schwarzwald-cont")
+  cols<-cols$hex[cols$limit>=0]
+  cols<-c("gold","lightgoldenrod","darkgreen","forestgreen","seagreen","saddlebrown","sienna4","brown")
+  cols<-c("grey90","lightgoldenrod","seagreen3","forestgreen","darkgreen","saddlebrown","sienna4","brown")
+  hill<-shade(terrain(r,"slope",unit="radians"),terrain(r,"aspect",unit="radians"),40,270)
+  plot(r,col=adjustcolor(colo.scale(1:200,),0.75),mar=c(0,0,0,0))
+  
+  png("C:/Users/God/Downloads/large_map.png",width=8,height=7,units="in",res=500)
+  par(bg="grey15")
+  plot(hill,col=grey(0:100/100), legend=FALSE, mar=c(0,0,0,0),maxcell=1000000)
+  plot(r,col=adjustcolor(colo.scale(1:200,cols),0.30),add=TRUE,maxcell=1000000)
+  plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=adjustcolor("gold",0.75),add=TRUE)
+  plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=adjustcolor("forestgreen",0.75),add=TRUE)
+  dev.off()
+  file.show("C:/Users/God/Downloads/large_map.png") 
+   
+  
+}
+
+
+
+
 
