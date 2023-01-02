@@ -1297,6 +1297,29 @@ if(FALSE){
   dev.off()
   file.show("C:/Users/God/Downloads/large_map.png") 
    
+  library(basemaps)
+  basemap_magick(st_bbox(run), map_service = "mapbox", map_type = "satellite")
+  
+  r<-basemap_raster(st_bbox(st_transform(run,3857)),map_res=3, map_service = "esri", map_type = "world_imagery")
+  r<-rast(r)
+  plotRGB(r,maxcell=5000000)
+  plot(st_geometry(st_transform(gbif,st_crs(r))),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
+  
+  
+  png(paste0(file.path("C:/Users/God/Downloads/images_large.png")),width=8,height=7,units="in",res=500)
+  par(bg="grey15")
+  plotRGB(r,maxcell=5000000)
+  #plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$gbif,add=TRUE)
+  #plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
+    plot(st_sample(st_geometry(st_transform(inat,st_crs(r))),20),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$gbif,add=TRUE)
+
+
+    plot(st_sample(st_geometry(st_transform(gbif,st_crs(r))),10),cex=1.25,lwd=1.5,pch=21,col="grey20",bg="orange",add=TRUE)
+
+  dev.off()
+  
+  
+  
   
 }
 
