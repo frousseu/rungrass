@@ -130,7 +130,7 @@ d$fna<-paste0("http://floranorthamerica.org/",gsub(" ","_",d$sp))
 
 ### OCCS #######################
 
-if(FALSE){
+if(TRUE){
   
 #### GBIF occs ##################m
   
@@ -139,6 +139,12 @@ if(FALSE){
 
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
   run<-st_buffer(st_geometry(run),50)
+  
+  library(basemaps)
+  sat<-basemap_raster(st_bbox(st_transform(run,3857)),map_res=1, map_service = "esri", map_type = "world_imagery")
+  sat<-rast(sat)
+  #plotRGB(sat,maxcell=5000000)
+  
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])#[1:2]
   key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
@@ -252,7 +258,16 @@ if(FALSE){
   occs<-rbind(gbif[,c("sp","source")],inat[,c("sp","source")])
   #plot(st_geometry(run))
   #plot(st_geometry(occs),add=TRUE,pch=1)
+  st_write(occs,"C:/Users/God/Documents/rungrass/occs.gpkg",append=FALSE)
+  occsold<-st_read("C:/Users/God/Documents/rungrass/occs.gpkg")
+  st_geometry(occsold)<-"geometry"
   
+  occs1<-as.data.frame(occs)
+  occs1$geometry<-as.character(occs1$geometry)
+  occs2<-as.data.frame(occsold)
+  occs2$geometry<-as.character(occs2$geometry)
+  updates<-unique(anti_join(occs1,occs2)$sp)
+  if(length(updates)==0){stop("No species to update")}
   
 ### Maps ####################
 
@@ -278,6 +293,8 @@ if(FALSE){
   hill<-shade(terrain(r,"slope",unit="radians"),terrain(r,"aspect",unit="radians"),40,270)
   r2<-focal(r,7,mean) # smooth pixels and look
   hill2<-focal(hill,7,mean) # smooth pixels and look
+  r2<-aggregate(r2,10)
+  hill2<-aggregate(hill2,10)
   #hill<-crop(hill,st_transform(st_buffer(run,dist=3000),crs(r)))
   #hill<-mask(hill,vect(st_transform(run,crs(r))))
   #alt<-mask(r,vect(st_transform(run,crs(r))))
@@ -286,10 +303,13 @@ if(FALSE){
   
   
   pcol<-list(
-    inat=adjustcolor("forestgreen",0.75),
+    #inat=adjustcolor("forestgreen",0.75),
+    #gbif=adjustcolor("gold",0.75),
+    inat=adjustcolor("gold",0.75),
     gbif=adjustcolor("gold",0.75),
     #colgrad=grey(seq(0.3,1,length.out=100))
-    colgrad=colo.scale(200,c("grey90","lightgoldenrod","seagreen3","forestgreen","darkgreen","saddlebrown","sienna4","brown"))
+    #colgrad=colo.scale(200,c("grey90","lightgoldenrod","seagreen3","forestgreen","darkgreen","saddlebrown","sienna4","brown")),
+    colgrad=colo.scale(200,c("lightgoldenrod","seagreen3","forestgreen","darkgreen","darkgreen","saddlebrown","sienna4","brown"))
   )
   
   
@@ -298,6 +318,7 @@ if(FALSE){
   mult<-abs(diff(ext(r2)[c(1,2)])/diff(ext(r2)[c(3,4)]))
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])#[1:10]
+  #sp<-updates
   occs2<-st_transform(occs,crs(hill))
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
     x<-occs2[which(occs2$sp==sp[i]),]
@@ -307,34 +328,38 @@ if(FALSE){
     par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
     #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
     plot(hill2,col=grey(0:100/100),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
-    plot(r2,col=adjustcolor(pcol$colgrad,0.30),legend=FALSE,mar=c(0,0,0,0),axes=FALSE,add=TRUE)
+    plot(r2,col=adjustcolor(pcol$colgrad,0.40),legend=FALSE,mar=c(0,0,0,0),axes=FALSE,add=TRUE)
     xgbif<-x[x$source=="gbif",]
     if(nrow(xgbif)>0){
-      plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
+      plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=1.75,xpd=TRUE,add=TRUE)
     }
     xinat<-x[x$source=="inat",]
     if(nrow(xinat)>0){
-      plot(st_geometry(xinat),pch=21,bg=pcol$inat,col=adjustcolor("black",0.7),lwd=1,cex=2,xpd=TRUE,add=TRUE)
+      plot(st_geometry(xinat),pch=21,bg=pcol$inat,col=adjustcolor("black",0.7),lwd=1,cex=1.75,xpd=TRUE,add=TRUE)
+      plot(st_geometry(xinat),pch=16,col="black",cex=0.55,xpd=TRUE,add=TRUE)
     }
-    mtext(side=3,adj=0.97,line=-1.75,text="En",col=grey(0.85),cex=1.5,font=1,xpd=TRUE)
+    mtext(side=3,adj=0.99,line=-1.75,text="En",col=grey(0.85),cex=1.25,font=1,xpd=TRUE)
     dev.off()
     
     ### large
-    png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"),width=8,height=7,units="in",res=500)
+    png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"),width=5,height=4.5,units="in",res=300)
     par(bg="grey15")
-    plot(hill,col=grey(0:100/100), legend=FALSE, mar=c(0,0,0,0),maxcell=1000000)
-    plot(r,col=adjustcolor(colo.scale(1:200,pcol$colgrad),0.30),add=TRUE,maxcell=1000000)
-    #plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$gbif,add=TRUE)
-    #plot(st_geometry(st_sample(run,10)),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
+    #plot(hill,col=grey(0:100/100),axes=FALSE, legend=FALSE, mar=c(0,0,0,0),maxcell=1000000)
+    #plot(r,col=adjustcolor(colo.scale(1:200,pcol$colgrad),0.30),axes=FALSE,legend=FALSE,add=TRUE,maxcell=1000000)
+    plotRGB(sat,axes=FALSE)
     if(nrow(xgbif)>0){
-      plot(st_geometry(xgbif),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$gbif,add=TRUE)
+      xxgbif<-st_transform(xgbif,3857)
+      plot(st_geometry(xxgbif),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$gbif,add=TRUE)
     }
     if(nrow(xinat)>0){
-      plot(st_geometry(xinat),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
+      xxinat<-st_transform(xinat,3857)
+      plot(st_geometry(xxinat),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$gbif,add=TRUE)
+      plot(st_geometry(xxinat),cex=0.25,pch=16,col="black",add=TRUE)
     }
+    legend("topright",inset=c(0.05,0),legend=c("iNat","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=pcol$gbif,bty="n")
+    legend("topright",inset=c(0.05,0),legend=c("iNat","GBIF"),text.col="#fff8dc",pt.cex=0.25,pt.lwd=1.3,pch=16,col=c("black","#FFFFFF00"),pt.bg="#FFFFFF00",bty="n")
     dev.off()
     #file.show("C:/Users/God/Downloads/large_map.png") 
-    
     
     
     cat("\r",paste(i,length(sp),sep=" / "))
@@ -530,8 +555,8 @@ a {
 }
 .About {
   display: none;
-  margin-left: 13vw;
-  margin-right: 13vw;
+  margin-left: 10vw;
+  margin-right: 10vw;
 }
 .ID {
   display: none;
@@ -661,7 +686,7 @@ hr {
 }
 
 /* The Modal (background) */
-.modal, .idmodal {
+.modal, .idmodal, .mapmodal {
 display: none; /* Hidden by default */
 position: fixed; /* Stay in place */
 z-index: 1; /* Sit on top */
@@ -682,6 +707,15 @@ display: block;
 width: 70%;
 max-width: 70%;
 }
+
+/* Modal Content (image) */
+.mapmodal-content {
+margin: auto;
+display: block;
+height: 95vh;
+max-height: 95vh;
+}
+
 
 /* Caption of Modal Image */
 #caption {
@@ -742,7 +776,7 @@ div.sticky2 {
 }
 
 /* Add Animation */
-.modal-content, .idmodal-content, #caption, #link {  
+.modal-content, .idmodal-content, .mapmodal-content, #caption, #link {  
 -webkit-animation-name: zoom;
 -webkit-animation-duration: 0.3s;
 animation-name: zoom;
@@ -779,7 +813,7 @@ cursor: pointer;
 
 /* 100% Image Width on Smaller Screens */
 @media only screen and (max-width: 700px){
-.modal-content, .idmodal-content {
+.modal-content, .idmodal-content, .mapmodal-content  {
 width: 100%;
 }
 }
@@ -957,7 +991,7 @@ species_links<-function(x,i){
      </a>")),
     ifelse(any(grep("/NA",x$borbonica[i])),"",
      paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img class=\"imglink\" style=\"height: 21px; padding: 0px;\" src=\"images/borbonica.ico\">
+       <img class=\"imglink\" style=\"height: 20px; padding: 0px;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
      </a>")),
      "<a target=\"_blank\" href=\"",x$inat[i],"\">
        <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
@@ -1009,7 +1043,7 @@ species_header<-function(x,i){
            ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">ID&#8628</button>&nbsp")),"
        </div>
        <div class=\"inner\">
-       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"images/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"images/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\"></span>
+       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\"></span>
        </div>
      </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\"><br>",x$id[i],"<br><br></p></div>")),"
      
@@ -1208,9 +1242,9 @@ cat("
 ### test for map the following
 
 cat("
-<div id=\"mapModal\" class=\"modal\">
+<div id=\"mapModal\" class=\"mapmodal\">
   <span class=\"close\">&times;</span>
-  <img class=\"modal-content\" id=\"map01\">
+  <img class=\"mapmodal-content\" id=\"map01\">
 </div>     
 ")
 
@@ -1300,7 +1334,7 @@ if(FALSE){
   library(basemaps)
   basemap_magick(st_bbox(run), map_service = "mapbox", map_type = "satellite")
   
-  r<-basemap_raster(st_bbox(st_transform(run,3857)),map_res=3, map_service = "esri", map_type = "world_imagery")
+  r<-basemap_raster(st_bbox(st_transform(run,3857)),map_res=1, map_service = "esri", map_type = "world_imagery")
   r<-rast(r)
   plotRGB(r,maxcell=5000000)
   plot(st_geometry(st_transform(gbif,st_crs(r))),cex=1.25,lwd=1.5,pch=21,col="grey20",bg=pcol$inat,add=TRUE)
