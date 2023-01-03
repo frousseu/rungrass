@@ -37,7 +37,7 @@ d$idobs<-ifelse(!is.na(d$idphoto),sapply(strsplit(d$obs,"/"),tail,1),NA)
   
 ### iNat credits ############################
 #w<-1:nrow(d) # get them all to verify if any attributions have changed
-w<-which(!is.na(d$idphoto) & is.na(d$attribution))
+w<-which(!is.na(d$idphoto) & is.na(d$attribution))[1]
 for(i in w){ # looping is better cause sometimes it times-out
   if(is.na(d$idobs[i])){
     a<-d$credit[i]
@@ -130,7 +130,7 @@ d$fna<-paste0("http://floranorthamerica.org/",gsub(" ","_",d$sp))
 
 ### OCCS #######################
 
-if(TRUE){
+if(FALSE){
   
 #### GBIF occs ##################m
   
@@ -438,6 +438,7 @@ cat(paste0("
   <head>
   <!-- <link rel='preload' href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100&display=swap' rel='stylesheet'> -->
     <link href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200' rel='stylesheet'>
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
   <title>
       RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
@@ -464,50 +465,69 @@ body {
   /* max-width: 1950px !important; */
   margin-left: 4vw;
   margin-right: 4vw;
+  /* zoom: 1; */
 }
+
+@media only screen and (max-width: 850px) {
+  body {
+    margin-left: 1vw;
+    margin-right: 1vw;
+    /*-webkit-transform: scale(1);*/
+    /* transform: scale(1,1); */
+  }
+}
+
+
 * {
   box-sizing: border-box;
 }
 p, li, ul {
   padding: 0px;
-  margin: 4px;
+  margin: 1vh;
   font-family: 'Roboto Mono';
   font-weight: 200;
   color: var(--white);
 }
+p.desc {
+  font-size: 2.25vmin;
+}
+
+
+
 h1 {
   color: var(--green);
-  font-size: 80px;
-  padding-left:0px;
-  padding-top:0px;
-  padding-bottom:0px;
+  font-size: 11vmin;
+  padding-left:0vh;
+  padding-top:0vh;
+  padding-bottom:0vh;
   font-family:'Roboto Mono'; 
   font-weight: 1600;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin-top: 0vh;
+  margin-bottom: 0vh;
   text-align: top;
 }
 h2 {
   color: var(--white);
-  font-size: 30px;
-  padding-left:10px;
-  padding-top:10px;
-  padding-bottom:0px;
+  font-size: 4.25vmin;
+  padding-left:0vh;
+  padding-top:0vh;
+  padding-bottom:0vh;
   font-family:'Roboto Mono'; 
   font-weight: 50;
-  margin-top: 0;
-  margin-bottom: 0px;
-  /* text-align: left; */
+  margin-top: 0vh;
+  margin-bottom: 0vh;
+  text-align: bottom;
 }
+
 .button {
   background-color: var(--black);
   border: none;
   color: var(--white);
-  padding: 0px 30px;
+  padding: 0vh 0vh;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 60px;
+  font-size: 8vmin;
   font-weight: 800;
   font-family:'Roboto Mono'; 
   cursor: pointer;
@@ -520,15 +540,15 @@ h2 {
   background: none;
   border: none;
   color: var(--white);
-  padding: 0px 0px 0px 0px;
+  padding-top: 6vmin;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 30px;
+  font-size: 4vmin;
   font-weight: 1200;
   font-family:'Roboto Mono'; 
   cursor: pointer;
-  height:10px;
+  /* height: 1.75vmin; */
 }
 .idbutton:hover {
   opacity: 0.50;
@@ -547,23 +567,34 @@ a {
   text-decoration: none; /* no underline */
   color: var(--green); /* #228B22; */
   font-weight: 600;
-  font-size: 16px;
+  font-size: 2.25vmin;
+  padding: 0vh;
+  margin: 0vh;
+  z-index: 0;
 }
 .atoc:hover {
   opacity: 0.50;
   filter: alpha(opacity=100);
 }
+
 .About {
   display: none;
   margin-left: 10vw;
   margin-right: 10vw;
 }
+@media only screen and (max-width: 850px) {
+  .About {
+    margin-left: 2vw;
+    margin-right: 2vw;
+  }
+}
+
 .ID {
   display: none;
 }
 .flore {
   color: var(--gray);
-  font-size: 16px;
+  font-size: 2vh;
   font-family:'Roboto Mono'; 
   font-weight: 100;
   display: inline-block;
@@ -578,7 +609,7 @@ a {
 .species {
   width: 100%;
   padding: 0px; 
-  margin-top: 20px;
+  margin-top: 3vh;
   background: var(--black); /* forestgreen; */
   /* background: #39AC39; */
   border-radius: 0px;
@@ -595,23 +626,34 @@ a {
   background: blue;
 }
 .imgsp {
-  height:190px;
-  width:14.26%;
+  max-height:25vh;
+  height:25vh;
+  width: 10.5vw; /* 14.26% */
   object-fit:cover;
   padding: 1px; /* 2px */
   margin: 0px; /* 2px */
   background: var(--white); /* #EEEEEE */
   background-origin: content-box;
   cursor: pointer;
-  border-radius: 50px;
+  border-radius: 7vh;
 }
 .imgsp:hover {
   opacity: 0.50;
   filter: alpha(opacity=100);
 }
+
+@media only screen and (max-width: 850px) {
+  .imgsp {
+    height: 15vh;
+    width: 30vw;
+    border-radius: 9vw;
+  }
+}
+
+
 .imgmap {
-  height: 80px; 
-  padding: 0px;
+  height: 11vh; 
+  padding-top: 1vh;
   cursor: pointer;
 }
 .imgmap:hover {
@@ -622,20 +664,19 @@ a {
   opacity: 0.50;
   filter: alpha(opacity=100);
 }
-.p2 {
+
+.p2, .p3 {
   color: var(--white);
-  font-size: 30px;
+  font-size: 4vmin; /* 30px */
+  padding-top: 6vmin;
   font-family:'Roboto Mono'; 
-  font-weight: 100;
-  text-decoration: none;
-  text-decoration-color: var(--white);
-  text-decoration-thickness: 1px;
+  font-weight: 800;
 }
 .p3 {
-  background-color: lightgreen;
-  position: relative;
-  top: 0px; 
-  left: 0px;
+  padding-top: 8vmin;
+  padding-left: 2vmin;
+  padding-right: 8vmin;
+  z-index: 99;
 }
 
 
@@ -643,69 +684,89 @@ a {
   scrollbar-width: thin;
 }
 
-/* width */
-::-webkit-scrollbar {
-  width: 15px;
-}
 
-/* Track */
+::-webkit-scrollbar {
+  width: 2vh;
+}
 ::-webkit-scrollbar-track {
   background: #222; /* var(--gray); */
 }
-
-/* Handle */
 ::-webkit-scrollbar-thumb {
   background: #444;
-  border-radius: 10px;
+  border-radius: 1vh; /* 1 */
 }
-
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   /* background: #444; */
   opacity: 0.50;
   filter: alpha(opacity=100);
-  
 }
-/* Track */
 ::-webkit-scrollbar-track {
-  border-radius: 10px;
+  border-radius: 2vh; /* 2 */
+  margin-top: 6vmin;
+  margin-bottom: 6vmin;
 }
 
-hr {
-  height: 10px;
+
+@media only screen and (max-width: 850px) {
+  ::-webkit-scrollbar {
+    width: 1vh;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 0.5vh;
+  }
+  ::-webkit-scrollbar-track {
+    border-radius: 1vh;
+  }
+}
+
+
+
+
+.bottomhr {
+  height: 2vh;
   border-width:0;
-  border-radius: 5px;
+  border-radius: 1vh;
   color: black;
   background-color: #222; /* var(--gray); */
 }
 
+.tophr {
+  height: 1px;
+  color: var(--gray);
+  border: 1px;
+  background-color: var(--gray);
+}
+
 #imgsp {
-  border-radius: 5px;
+  border-radius: 1vh;
   cursor: pointer;
   transition: 0.3s;
 }
 
 /* The Modal (background) */
 .modal, .idmodal, .mapmodal {
-display: none; /* Hidden by default */
-position: fixed; /* Stay in place */
-z-index: 1; /* Sit on top */
-padding-top: 20px; /* Location of the box */
-left: 0;
-top: 0;
-width: 100%; /* Full width */
-height: 100%; /* Full height */
-overflow: auto; /* Enable scroll if needed */
-background-color: rgb(0,0,0); /* Fallback color */
-background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+ display: none; /* Hidden by default */
+ position: fixed; /* Stay in place */
+ z-index: 100; /* Sit on top */
+ padding-top: 4vh; /* Location of the box */
+ left: 0;
+ top: 0;
+ width: 100vw; /* Full width */
+ height: 100vh; /* Full height */
+ overflow: auto; /* Enable scroll if needed */
+ background-color: rgb(0,0,0); /* Fallback color */
+ background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+ overscroll-behavior: contain;
 }
+
 
 /* Modal Content (image) */
 .modal-content, .idmodal-content {
-margin: auto;
-display: block;
-width: 70%;
-max-width: 70%;
+ margin: auto;
+ display: block;
+ width: 70%;
+ max-width: 70%;
 }
 
 /* Modal Content (image) */
@@ -751,28 +812,48 @@ width: 50%;
 max-width: 50%;
 text-align: center;
 color: #ccc;
-padding: 10px 0;
+padding: 2vh 0;
 font-family: 'Roboto Mono';
 }
 
 div.sticky {
   position: -webkit-sticky;
   position: sticky;
-  top: 0;
-  padding: 0px;
+  top: 6vmin; /* 0; */
+  padding: 0vh;
     width: 100%;
-  padding: 0px;
+  padding: 0vh;
   background: var(--black);
-  border-radius: 0px;
+  border-radius: 0vh;
+  z-index: 99;
 }
 
-div.sticky2 {
+div.left {
   position: -webkit-sticky;
   position: sticky;
-  top: 0;
-  padding: 0px;
-    width: 100%;
-  padding: 0px;
+  top: 6vh;
+  width: 14%; 
+  height: 98vh; 
+  float: left; 
+  display: inline-block; 
+  padding-right: 0.5%; 
+  overflow-y: scroll;
+}
+
+div.right {
+  width: 84%; 
+  float: left; 
+  display: inline-block; 
+  padding-left: 1.5%;
+}
+
+@media only screen and (max-width: 850px) {
+  div.left {
+    width: 35%;
+  }
+  div.right {
+    width: 63%;
+  }
 }
 
 /* Add Animation */
@@ -796,10 +877,10 @@ to {transform:scale(1)}
 /* The Close Button */
 .close, .idclose {
 position: absolute;
-top: 15px;
-right: 35px;
+top: 1vh;
+right: 2vh;
 color: #f1f1f1;
-font-size: 40px;
+font-size: 5vh;
 font-weight: bold;
 transition: 0.3s;
 }
@@ -812,22 +893,35 @@ cursor: pointer;
 }
 
 /* 100% Image Width on Smaller Screens */
-@media only screen and (max-width: 700px){
+@media only screen and (max-width: 850px){
 .modal-content, .idmodal-content, .mapmodal-content  {
 width: 100%;
 }
 }
 
-.header {
+
+#testing1, #testing2, #testing3, #testing4 {
+  transition: 0.3s;
+}
+
+
+#header {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  padding-bottom: 0vh;
   display: flex;                  /* establish flex container */
   flex-direction: row;            /* default value; can be omitted */
   flex-wrap: wrap;              /* default value; can be omitted */
   justify-content: space-between; /* switched from default (flex-start, see below) */
-  /* background-color: #111; */
+  transition: 0.3s;
+  z-index: 99;
+  border-bottom: 1px solid var(--gray);
+  /* background-color: var(--gray); */
 }
-.header > div {
+#header > div {
   /* width: 100px; */
-  height: 100px;
+  /* height: 8vh; */
   /* border: 2px dashed red; */
 }
 
@@ -838,13 +932,13 @@ width: 100%;
   justify-content: space-between; /* switched from default (flex-start, see below) */
   align-content: bottom;
   align-items: bottom;
-  padding-top: 40px;
+  padding-top: 6vh;
   /* background-color: #111; */
 }
 
 .headersp > div {
   /* width: 100px; */
-  height: 60px;
+  /* height: 6vh; */
   /* border: 2px dashed red; */
 }
 
@@ -859,43 +953,50 @@ width: 100%;
 </head>
 <a id=\"top\"></a>  
 <body>
-
-<div class=\"header\">
+<!-- <img style=\"height: 4vmin;\" src=\"images/rungrass3.png\"> -->
+<div id=\"header\">
   <div>
-    <h1>RUNGRASS<img style=\"height: 75px; padding-top: 15px;\" src=\"images/rungrass3.png\"></h1>
+    <h1 id=\"testing1\"><a href=\"#top\">RUNGRASS<img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrass3.png\"></a></h1>
   </div>
   <div>
-    <h2>Guide&nbspphotographique&nbspdes&nbsppoacées,<br>cypéracées&nbspet&nbspjuncacées&nbspde&nbspla&nbspRéunion</h2>
+    <h2 id=\"testing3\">Guide&nbspphotographique&nbspdes&nbsppoacées,<br>cypéracées&nbspet&nbspjuncacées&nbspde&nbspla&nbspRéunion</h2>
   </div>
   <div>
-    <button class=\"button\" onclick=\"myFunction()\">?</button>
+    <a href=\"#pres\"><button class=\"button\" id=\"testing4\" onclick=\"scrollFunction(); myFunction();\">?</button></a>
   </div>
 </div>
   
-<hr>
+<!-- <hr class=\"tophr\"> -->
   
 <div class=\"About\" id=\"About\">  
 <br>
-
-<h2>Présentation</h2><br><br>
+<a id=\"pres\"></a>
+<h1>&#32</h1>
+<br>
 <div>
   <button class=\"button\" style=\"display: inline-block; float: right;\" onclick=\"myFunction()\">x</button>
 </div>
-<p style = \"font-size:17px;\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Cliquez sur le nom d'une espèce pour accéder à sa fiche sur l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin. </p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p class=\"desc\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin des sections sur chaque espèce. </p><br>
   
-<p style = \"font-size:17px;\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont toutes sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
+<p class=\"desc\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
 
-<p style = \"font-size:17px;\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
+<p class=\"desc\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
 
-<h2>Identification +</h2><br><br>
+<h2>Identification ID&#8628</h2><br><br>
 
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 Pour quelques espèces, les traits distinctifs et l'aspect général de la plante sont décrits set des trucs sont donnés pour distinguer des espèces semblables pouvant être confondues avec l'espèce en question.  Ces descriptions sont données à titre indicatif seulement et on pour but de faciliter l'identification et la reconnaissance des différentes espèces et non de fournir une description exhaustive. Les descriptions sont majoritairement basées sur mes observations personnelles et elles sont parfois fortement inspirées des descriptions et des clés d'identification fournies dans la Flore des Mascareignes ainsi que dans d'autres ouvrages comme AusGrass2 (voir plus bas), le guide <i>Identification Guide to southern African Grass</i>(Fish, Mashau, Moeaha et Nembudani, 2015) ou Graminées des pâturages et des cultures à Madagascar (Bosser, 1969). Pour beaucoup d'espèces, mon expérience est encore beaucoup trop limitée (et souvent inexistante!) pour fournir une description.
 </p><br><br>
 
-<h2>Occurrences<img style=\"height: 50px; padding: 0px;\" src=\"images/Cyperus_javanicus.png\"></h2><br><br>
 
-<p style = \"font-size:17px;\">
+<h2>Occurrences<img style=\"height: 8vmin; padding: 0px;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/Cyperus_javanicus.png\"></h2><br><br>
+
+<p class=\"desc\">
 L'objectif premier des cartes de distribution présentées ici est de donner une idée approximative de l'abondance et de la répartition des espèces à travers l'île. En aucun cas, ces occurrences doivent être interprétées comme étant exhaustives, précises ou représentatives de la répartition exacte des espèces. Lors de l'interprétation de ces cartes, il faut garder en tête que:
 <br><br>
 &nbsp&nbsp&nbsp- les localisations peuvent être très imprécises<br>
@@ -917,62 +1018,91 @@ Pour beaucoup d'espèces, plusieurs noms ont été ou sont couramment utilisés 
 <h2>Liens externes</h2><br><br>
 
 <a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">
-  <img style=\"height: 30px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
 </a>
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 <a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">L'Index taxonomique de la flore vasculaire de La Réunion</a> produit par le CBN-CPIE Mascarin contient plusieurs informations sur les espèces présentées ici et a permis détablir la liste des espèces présentes sur l'île. Il contient notamment le statut de chaque espèce sur l'île (endémique, indigène, exotique, envahissante, cryptogène, etc.), les noms vernaculaires et les noms locaux, etc. La section PLUS D'INFOS est à consulter pour l'historique et le niveau de connaissance de chaque espèce sur l'ile.
 </p><br><br>
 
 <a target=\"_blank\" href=\"http://atlas.borbonica.re\">
-  <img style=\"height: 32px; padding: 0px;\" src=\"images/borbonica.ico\">
+  <img style=\"height: 8vmin; padding: 0vmin;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
 </a>
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 <a href=\"http://atlas.borbonica.re\" target=\"_blank\">Borbonica</a> est le portail d'accès aux données sur la faune et la flore du SINP à La Réunion (Système d'Information de l'iNventaire du Patrimoine naturel de La Réunion (SINP 974)) . Il est administré par la DEAL et le Parc national de La Réunion. L'atlas présente notamment des synthèses par espèce décrivant les occurrences, les habitats, la phénologie, la synonymie, etc. Les liens pour chaque espèce renvoient vers ces fiches lorsque celles-ci sont disponibles. Souvent, les occurrences retrouvées sur Borbonica sont plus complètes que les occurrences illustrées ici, car les données présentées par Borbonica sont moins ouvertement accessibles que les données disponibles sur iNaturalist ou GBIF.
 </p><br><br>
 
-<a target=\"_blank\" href=\"https://powo.science.kew.org/\">
-  <img style=\"height: 25px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+<a target=\"_blank\" href=\"https://www.inaturalist.org\">
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
 </a>
-<p style = \"font-size:17px;\">
-<a href=\"https://powo.science.kew.org/\" target=\"_blank\">POWO</a> (<i>Plants of the World Online</i>) est un programme du <i>Royal Botanical Garden, Kew</i> cherchant à rendre disponible l'ensemble des données numériques disponibles sur la flore mondiale. On y retrouve notamment des descriptions, des photos, des renseignements taxonomiques et des cartes de répartition pour la majorité de la flore vasculaire. Les liens pour chaque espèce renvoient vers les pages pour chaque espèce.
+<p class=\"desc\">
+<a href=\"https://www.inaturalist.org\">iNaturalist</a> est une plateforme et une application permettant d'enregistrer et de partager des observations du vivant qui seront soumises à la communauté pour l'identification. Il s'agit probablement de la plus importante plateforme de science participative pour l'enregistrement d'observations opportunistes du vivant. Le lien présenté pour chaque espèce renvoie vers l'ensemble des observations de l'espèce enregistrées sur cette plateforme pour la Réunion. À noter que toutes les observations faites et déposées sur iNaturalist seront éventuellement intégrées à ce site. Dans bien des cas, les espèces n'ont pas encore d'observations sur iNaturalist. 
 </p><br><br>
 
 <a target=\"_blank\" href=\"https://www.gbif.org/fr/\">
-  <img style=\"height: 26px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
 </a>
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 <a href=\"https://www.gbif.org/fr/\" target=\"_blank\">GBIF</a> (<i>Global Biodiversity Information Facility</i>) est un système mondial d’information sur la biodiversité. Les observations déposées sur iNaturalist ayant une license CC et atteignant le niveau recherche sont régulièrement versées sur GBIF. Les liens pour chaque espèce renvoient vers la page dédiée à chaque taxon. Dans bien des cas, une même espèce peut avoir plusieurs noms et ces noms peuvent être associés à différentes occurrences ou différentes photos. En général, le lien donné ici renvoie vers le nom le plus couramment utilisé pour l'espèce.
 </p><br><br>
 
+<a target=\"_blank\" href=\"https://science.mnhn.fr/\">
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"images/mnhn.png\"> 
+</a>
+<p class=\"desc\">
+<a href=\"\">Le Muséum National d'Histoire Naturelle (MNHN)</a> contient plusieurs spécimens d'herbier digitalisés et est très utile pour étudier les spécimens types et les espèces plus rarement rencontrées ou rapportées dans les bases de donnnées de science participative.
+</p><br><br>
+
+<a target=\"_blank\" href=\"https://tropicos.org\">
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"images/tropicos.png\"> 
+</a>
+<p class=\"desc\">
+<a href=\"\">Tropicos</a> est un système de données botaniques en ligne du <i>Missouri Botanical Garden</i>. Il contient de l'information sur la taxonomie, des spécimens d'herbier, etc. 
+</p><br><br>
+
+<a target=\"_blank\" href=\"https://powo.science.kew.org/\">
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+</a>
+<p class=\"desc\">
+<a href=\"https://powo.science.kew.org/\" target=\"_blank\">POWO</a> (<i>Plants of the World Online</i>) est un programme du <i>Royal Botanical Garden, Kew</i> cherchant à rendre disponible l'ensemble des données numériques disponibles sur la flore mondiale. On y retrouve notamment des descriptions, des photos, des renseignements taxonomiques et des cartes de répartition pour la majorité de la flore vasculaire. Les liens pour chaque espèce renvoient vers les pages pour chaque espèce.
+</p><br><br>
+
+<a target=\"_blank\" href=\"https://floranorthamerica.org\">
+  <img style=\"height: 8vmin; padding: 0px;\" src=\"images/fna.jpg\"> 
+</a>
+<p class=\"desc\">
+<a href=\"\"><i>Flora of North America</i></a> est une flore en ligne très utile pour l'identification des espèces lorsque celles-ci ont été rapportées en Amérique du Nord. On trouve notamment des descriptions, des illustrations et des clés d'identification.
+</p><br><br>
+
+
 <h2>Autres ressources</h2><br><br>
 
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacarine-Cadetiana</a> développée par le CBN-CPIE Mascarin est une interface permettant de faire des requêtes spatiales et d'étudier les occurrences de la flore réunionnaise.
 </p><br><br>
 
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 <a href=\"https://www.mi-aime-a-ou.com/flore_ile_reunion.php\" target=\"_blank\">Mi-aime-a-ou</a> est un site d'intérêt général  sur la Réunion et comporte notamment une impressionante quantité d'information sur la flore réunionnaise.
 </p><br><br>
 
-<p style = \"font-size:17px;\">
+<p class=\"desc\">
 <a href=\"https://ausgrass2.myspecies.info/\" target=\"_blank\">AusGrass2</a>
+Site australien sur les poacées très utile pour l'identification lorsque les espèces sont aussi présentes en terrtoire australien.
 </p><br><br>
 
-<hr>
+<hr class=\"tophr\">
 
 </div>
 
 
 
 <div style=\"display:inline-block; width:100%;\">
-  <div class=\"sticky2\" style=\"width:14%; height: 100vh; float: left; display: inline-block; padding-right: 0.5%; overflow-y:scroll;\">
-  <div class=\"sticky\">
-  <p class=\"p2\">Espèces<a href=\"#top\"><img style=\"height; 4vh; width: 4vh;\" src=\"images/rungrass3.png\"></a></p>
+  <div class=\"left\" style=\"\">
+    <div class=\"sticky\">
+      <span class=\"p3\">Espèces</span>
+    </div>
+      <p style = \"color: black; font-size: 0vh; padding: 0vh; margin-left: 1vh;\">",genus(),"</p>
   </div>
-  <p style = \"color:black;font-size:17px;\">",genus(),"
-  </p>
-  </div>
-  <div style=\"width:84%; float: left; display: inline-block; padding-left: 1.5%;\">
+  <div class=\"right\" style=\"\">
 
 <!-- <div class=\"species\" style=\"margin-top: 0px;\">
 <p class=\"p2\">iNaturalist&nbsp;&nbsp<span class=\"flore\">Flore des Mascareignes&nbsp;&nbsp</span><span class=\"flore\">Index du CBN-CPIE Mascarin</span><span class=\"flore\" style=\"float:right;\">Famille</span>
@@ -987,29 +1117,29 @@ species_links<-function(x,i){
   res<-paste0(
     ifelse(any(grep("=NA",x$cbnm[i])),"",
     paste0("<a target=\"_blank\" href=\"",x$cbnm[i],"\">
-       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
      </a>")),
     ifelse(any(grep("/NA",x$borbonica[i])),"",
      paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img class=\"imglink\" style=\"height: 20px; padding: 0px;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
      </a>")),
      "<a target=\"_blank\" href=\"",x$inat[i],"\">
-       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
      </a>
      <a target=\"_blank\" href=\"",x$gbif[i],"\">
-       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
      </a>
      <a target=\"_blank\" href=\"",x$mnhn[i],"\">
-       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"images/mnhn.png\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/mnhn.png\">
      </a>
      <a target=\"_blank\" href=\"",x$tropicos[i],"\">
-       <img class=\"imglink\" style=\"height: 18px; padding: 0px;\" src=\"images/tropicos.png\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/tropicos.png\">
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
-       <img class=\"imglink\" style=\"height: 17px; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
      </a>
      <a target=\"_blank\" href=\"",x$fna[i],"\">
-       <img class=\"imglink\" style=\"height: 17px; padding: 0px;\" src=\"images/fna.jpg\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/fna.jpg\">
      </a>
      </a>&nbsp;&nbsp;"
   )
@@ -1045,7 +1175,7 @@ species_header<-function(x,i){
        <div class=\"inner\">
        <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\"></span>
        </div>
-     </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p style = \"font-size:17px;\"><br>",x$id[i],"<br><br></p></div>")),"
+     </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p class=\"desc\"><br>",x$id[i],"<br><br></p></div>")),"
      
  "))
 }
@@ -1066,7 +1196,7 @@ species_photo<-function(x,i){
 species_excluded<-function(i,j){
   #paste(sapply(seq_along(i),function(i){
   excluded<-paste0(paste0("<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",j),"\" target=\"_blank\">",i,"</a>"),collapse=", ")
-  cat(paste("<br><br><p style = \"font-size:17px;\">Liste des espèces qui n'ont pas été retenues et lien vers l'index du CBN - CPIE Mascarin:"),excluded,"</p><br><br>")
+  cat(paste("<br><br><p style = \"font-size: 2vh;\">Liste des espèces qui n'ont pas été retenues et lien vers l'index du CBN - CPIE Mascarin:"),excluded,"</p><br><br>")
 }
 
 
@@ -1285,10 +1415,30 @@ cat("
       }
     }
     
+    
+    window.onscroll = function() {scrollFunction()};
+
+    function scrollFunction() {
+      if (document.body.scrollTop > 2 || document.documentElement.scrollTop > 2) {
+        document.getElementById(\"testing1\").style.fontSize = \"4.25vmin\";
+        document.getElementById(\"testing2\").style.height = \"4vmin\";
+        document.getElementById(\"testing3\").style.fontSize = \"2vmin\";
+        document.getElementById(\"testing4\").style.fontSize = \"3.75vmin\";
+        document.getElementById(\"header\").style.paddingBottom = \"1vmin\";
+      } else {
+        document.getElementById(\"testing1\").style.fontSize = \"11vmin\";
+        document.getElementById(\"testing2\").style.height = \"9vmin\";
+        document.getElementById(\"testing3\").style.fontSize = \"4.25vmin\";
+        document.getElementById(\"testing4\").style.fontSize = \"8vmin\";
+        document.getElementById(\"header\").style.paddingBottom = \"0vmin\";
+      }
+    }
+    
+    
+    
+    
     </script>    
 ")
-
-
 
 
 
