@@ -562,6 +562,12 @@ a {
 .a2 {
   text-decoration: none; /* no underline */
   color: var(--green);
+  font-size: 2.25vmin;
+}
+.a3 {
+  color: var(--white);
+  font-size: 2.25vmin;
+  font-weight: 400;
 }
 .atoc {
   text-decoration: none; /* no underline */
@@ -594,7 +600,7 @@ a {
 }
 .flore {
   color: var(--gray);
-  font-size: 2vh;
+  font-size: 2vmin;
   font-family:'Roboto Mono'; 
   font-weight: 100;
   display: inline-block;
@@ -765,16 +771,29 @@ a {
 .modal-content, .idmodal-content {
  margin: auto;
  display: block;
- width: 70%;
- max-width: 70%;
+ width: 70vw;
+ max-width: 70vw;
+ height: auto;
+ max-height: auto;
 }
+@media only screen and (max-width: 850px) {
+  .modal-content, .idmodal-content {
+    width: 98vw;
+    max-width: 98vw;
+    height: auto;
+    max-height: auto;
+  }
+}
+
 
 /* Modal Content (image) */
 .mapmodal-content {
 margin: auto;
 display: block;
-height: 95vh;
-max-height: 95vh;
+width: auto;
+max-width: auto;
+height: 95vmin;
+max-height: 95vmin;
 }
 
 
@@ -782,27 +801,39 @@ max-height: 95vh;
 #caption {
 margin: auto;
 display: block;
-width: 70%;
-max-width: 70%;
+width: 70vw;
+max-width: 70vw;
 text-align: center;
 color: #ccc;
-padding: 10px 0;
-height: 25px;
+padding: 2vmin 0;
+height: 5vmin;
 font-family: 'Roboto Mono';
+}
+@media only screen and (max-width: 850px) {
+  #caption {
+    width: 98vw;
+    max-width: 98vw;
+  }
 }
 
 /* Link of Modal Image */
 #link {
 margin: auto;
 display: block;
-width: 70%;
-max-width: 70%;
+width: 70vw;
+max-width: 70vw;
 text-align: center;
 color: #ccc;
-padding: 10px 0;
-margin-bottom: 50px;
-height: 42px;
+padding: 2vmin 0;
+margin-bottom: 6vh;
+height: 7vmin;
 font-family: 'Roboto Mono';
+}
+@media only screen and (max-width: 850px) {
+  #link {
+    width: 98vw;
+    max-width: 98vw;
+  }
 }
 
 #idtips {
@@ -812,7 +843,7 @@ width: 50%;
 max-width: 50%;
 text-align: center;
 color: #ccc;
-padding: 2vh 0;
+padding: 2vmin 0;
 font-family: 'Roboto Mono';
 }
 
@@ -1261,7 +1292,7 @@ cat("
     // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
     <!-- modalImg.src = this.src; -->
     modalImg.src = this.dataset.src;
-    captionText.innerHTML = this.title;
+    captionText.innerHTML = '<a class=\"a3\">' + this.title + '</a>';
     linkText.innerHTML = '<a class=\"a2\" href=\"' + this.alt + '\" target=\"_blank\">' + this.alt + '</a>' ;
     }
     }
