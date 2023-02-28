@@ -442,8 +442,8 @@ cat(paste0("
   <title>
       RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
-  <link rel='icon' type='image/png' href='rungrass3.png?v=2'/>
-  <link rel='shortcut icon' type='image/png' href='rungrass3.png?v=2'/>
+  <link rel='icon' type='image/png' href='rungrasslogo500.png?v=2'/>
+  <link rel='shortcut icon' type='image/png' href='rungrasslogo500.png?v=2'/>
   <meta name=\"keywords\" content=\"Réunion, poacées, grass, grasses, poaceae, sedge, sedges, cypéracées, cyperaceae, cyperus, rush, rushes, juncacées, juncaceae, botanique, flore, herbes, herb, herbe, graminées, carex\">
   <style>
 
@@ -984,10 +984,10 @@ width: 100%;
 </head>
 <a id=\"top\"></a>  
 <body>
-<!-- <img style=\"height: 4vmin;\" src=\"images/rungrass3.png\"> -->
+<!-- <img style=\"height: 4vmin;\" src=\"images/rungrasslogo.png\"> -->
 <div id=\"header\">
   <div>
-    <h1 id=\"testing1\"><a href=\"#top\">RUNGRASS<img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrass3.png\"></a></h1>
+    <h1 id=\"testing1\"><a href=\"#top\">RUNGRASS<img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrasslogo.png\"></a></h1>
   </div>
   <div>
     <h2 id=\"testing3\">Guide&nbspphotographique&nbspdes&nbsppoacées,<br>cypéracées&nbspet&nbspjuncacées&nbspde&nbspla&nbspRéunion</h2>
