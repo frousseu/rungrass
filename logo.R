@@ -1,10 +1,11 @@
 
-library(magick)
 library(supercells)
 library(terra)
 library(sf)
 library(rmapshaper)
 library(FRutils)
+library(webshot2)
+library(magick)
 
 #########################################
 ### Extyract spikes #####################
@@ -59,6 +60,7 @@ plot(im)
 #head(rev(sort(table(col[,3])))) #adjustcolor("#4d1d2bff",0.8)
 
 col<-colo.scale(1:100,c("red4","purple4"))[20]
+#col<-"gold"
 spike<-image_trim(image_read("C:/Users/God/Downloads/newlogo2.png"))
 spike<-image_quantize(spike,2) |> image_split()
 spike<-image_trim(spike[1])
@@ -109,6 +111,7 @@ flag<-image_read("https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Prop
 flag<-image_quantize(flag,3,dither=FALSE)
 #ims<-image_split(flag)
 ras<-image_raster(flag)
+table(ras[,3])
 cols<-t(col2rgb(ras[,3]))
 r<-rast(cbind(ras[,1:2],cols))
 r<-flip(r)
@@ -154,7 +157,8 @@ rest<-st_difference(run,volcano)
 
 
 
-cols<-c("#43cd80","#fff8dc","darkred")
+cols<-c("#43cd80","#fff8dc")
+#cols<-c("#43cd80","#fcfc16ff")
 png("C:/Users/God/Downloads/rungrasslogo.png",width=5,height=5,units="in",res=300)
 par(bg="#111111")
 plot(st_geometry(b),col=cols[1],border=NA,axes=FALSE)
@@ -181,7 +185,79 @@ image_write(logo,"C:/Users/God/Downloads/rungrasslogo.png")
 image_write(image_quantize(image_scale(logo,"500"),100),"C:/Users/God/Downloads/rungrasslogo500.png")
 file.show("C:/Users/God/Downloads/rungrasslogo.png")
 
+logo<-image_read("C:/Users/God/Downloads/rungrasslogo.png")
+#logo<-image_motion_blur(logo,radius=5)
+logo<-image_noise(logo)
+#logo<-image_emboss(logo)
+plot(logo)
 
+
+#############################################################
+### logo with text ##########################################
+#############################################################
+
+textlogo<-function(){
+cat("
+<!DOCTYPE html>
+  <html>
+  <head>
+  <!-- <link rel='preload' href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100&display=swap' rel='stylesheet'> -->
+    <link href='https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200' rel='stylesheet'>
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+
+  <style>
+
+:root {
+  --green: #43cd80; /* #43cd80; */
+  --white: #fff8dc; /* #fff8dc; */
+  --black: #111111; /* #111111; */
+  --gray: #fff8dc77; /* #fff8dc77; */
+}
+* {
+  background-color: var(--black);
+}
+
+p {
+  padding: 0px;
+  margin: 0vh;
+  font-family: 'Roboto Mono';
+  font-weight: 600;
+  font-size: 25vh;
+  color: var(--green);
+}
+
+</style>
+</head>
+<body>
+
+")
+
+cat("
+  <p>RUNGRASS</p>
+  </body>
+  </html>
+")
+}
+
+con <- file("C:/Users/God/Documents/rungrass/rungrasslogo.html", open = "wt", encoding = "UTF-8")
+sink(con)
+textlogo()
+close(con)
+#file.show("C:/Users/God/Documents/rungrass/rungrasslogo.html")
+
+webshot("C:/Users/God/Documents/rungrass/rungrasslogo.html","C:/Users/God/Documents/rungrass/rungrasslogotext.png",zoom=2)
+
+logotext<-image_read("C:/Users/God/Documents/rungrass/rungrasslogotext.png") |> image_trim()
+#logotext<-image_border(logotext,"#111111","500")
+logo<-image_read("C:/Users/God/Downloads/rungrasslogo.png")
+logo<-image_scale(logo,paste0(image_info(logotext)$height))
+logo<-image_background(logo,"#111111")
+logo<-image_border(logo,"#111111","20")
+logotext<-image_append(c(logotext,logo)) |> image_trim()
+image_write(logotext,"C:/Users/God/Documents/rungrass/rungrasslogotext.png",depth=16)
+file.show("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
+#logotrans<-image_background(logotext,"none")
+#plot(logotrans)
 
 #plot(image_distort(spikes[3],"arc",coordinates=seq(1,80,length.out=12)))
 #plot(image_shear(spikes[3],"500x50"))

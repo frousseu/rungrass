@@ -37,7 +37,7 @@ d$idobs<-ifelse(!is.na(d$idphoto),sapply(strsplit(d$obs,"/"),tail,1),NA)
   
 ### iNat credits ############################
 #w<-1:nrow(d) # get them all to verify if any attributions have changed
-w<-which(!is.na(d$idphoto) & is.na(d$attribution))[1]
+w<-which(!is.na(d$idphoto) & is.na(d$attribution))#[1]
 for(i in w){ # looping is better cause sometimes it times-out
   if(is.na(d$idobs[i])){
     a<-d$credit[i]
@@ -364,6 +364,16 @@ if(FALSE){
     
     cat("\r",paste(i,length(sp),sep=" / "))
   }
+  
+  
+  #ims<-list.files("C:/Users/God/Documents/rungrass/images",full=TRUE,pattern="_large.png")
+  #im<-image_read(ims[10])
+  ##im<-image_fill(im,"blue","+30+30",fuzz=5)
+  #im<-image_quantize(im,500,dither=FALSE)
+  #plot(im)
+  #image_write(image_read(ims[10]),"C:/Users/God/Documents/rungrass/images/test1.png")
+  #image_write(im,"C:/Users/God/Documents/rungrass/images/test2.png")
+  #file.show("C:/Users/God/Documents/rungrass/images/test2.png")
   
 }
 
@@ -987,13 +997,13 @@ width: 100%;
 <!-- <img style=\"height: 4vmin;\" src=\"images/rungrasslogo.png\"> -->
 <div id=\"header\">
   <div>
-    <h1 id=\"testing1\"><a href=\"#top\">RUNGRASS<img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrasslogo.png\"></a></h1>
+    <h1 id=\"testing1\"><a href=\"#top\"><img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrasslogotext.png\"></a></h1>
   </div>
   <div>
     <h2 id=\"testing3\">Guide&nbspphotographique&nbspdes&nbsppoacées,<br>cypéracées&nbspet&nbspjuncacées&nbspde&nbspla&nbspRéunion</h2>
   </div>
   <div>
-    <a href=\"#pres\"><button class=\"button\" id=\"testing4\" onclick=\"scrollFunction(); myFunction();\">?</button></a>
+    <a href=\"#pres\"><button class=\"button\" id=\"testing4\" onclick=\"scrollFunction(); myFunction();\">&#10068</button></a>
   </div>
 </div>
   
@@ -1012,13 +1022,18 @@ width: 100%;
 <br>
 <br>
 <br>
+
+<img style=\"height: 15vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrasslogotext.png\">
+<br>
+<br>
+<br>
 <p class=\"desc\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin des sections sur chaque espèce. </p><br>
   
 <p class=\"desc\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
 
 <p class=\"desc\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
 
-<h2>Identification ID&#8628</h2><br><br>
+<h2>Identification&#8628</h2><br><br>
 
 <p class=\"desc\">
 Pour quelques espèces, les traits distinctifs et l'aspect général de la plante sont décrits set des trucs sont donnés pour distinguer des espèces semblables pouvant être confondues avec l'espèce en question.  Ces descriptions sont données à titre indicatif seulement et on pour but de faciliter l'identification et la reconnaissance des différentes espèces et non de fournir une description exhaustive. Les descriptions sont majoritairement basées sur mes observations personnelles et elles sont parfois fortement inspirées des descriptions et des clés d'identification fournies dans la Flore des Mascareignes ainsi que dans d'autres ouvrages comme AusGrass2 (voir plus bas), le guide <i>Identification Guide to southern African Grass</i>(Fish, Mashau, Moeaha et Nembudani, 2015) ou Graminées des pâturages et des cultures à Madagascar (Bosser, 1969). Pour beaucoup d'espèces, mon expérience est encore beaucoup trop limitée (et souvent inexistante!) pour fournir une description.
@@ -1192,6 +1207,8 @@ uncertain<-function(x){
   if(x=="Poa trivialis"){return("Poa (trivialis ?)")}
   if(x=="Panicum miliaceum"){return("Panicum (miliaceum ?)")}
   if(x=="Aristida congesta barbicollis"){return("Aristida (congesta barbicollis ?)")}
+  if(x=="Avenella flexuosa"){return("Avenella (flexuosa ?)")}
+  if(x=="Urochloa brizantha"){return("Urochloa (brizantha ?)")}
   x
 }
 
@@ -1201,7 +1218,7 @@ species_header<-function(x,i){
     "<div id=\"",x$sp[i],"\" class=\"headersp\">
        <div class=\"inner\">
            <span class=\"p2\">",uncertain(x$sp[i]),"</span>"
-           ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">ID&#8628</button>&nbsp")),"
+           ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">&#9660</button>&nbsp")),"
        </div>
        <div class=\"inner\">
        <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\"></span>
