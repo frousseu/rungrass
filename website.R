@@ -228,9 +228,9 @@ if(FALSE){
 # include reviewed_by me 
 # https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
 
-  api<-"https://api.inaturalist.org/v1/observations?geo=true&verifiable=true&place_id=8834&taxon_id=47434%2C47161%2C52642&hrank=species&lrank=subspecies&order=desc&order_by=created_at&page=1"
+  api<-"https://api.inaturalist.org/v1/observations?geo=true&verifiable=true&place_id=8834&taxon_id=47434%2C47161%2C52642&hrank=species&lrank=subspecies&order=desc&order_by=created_at&page=1&per_page=200"
   x<-fromJSON(api)
-  pages<-ceiling(x$total_results/30)
+  pages<-ceiling(x$total_results/200)
 
   inatjson<-foreach(i=1:pages,.packages=c("jsonlite")) %do% {
     page<-paste0("page=",i)
@@ -239,9 +239,10 @@ if(FALSE){
       sp=x$results$taxon$name,
       user=x$results$user$login,
       location=x$results$location,
-      grade=x$results$quality_grade
+      grade=x$results$quality_grade,
+      date=x$results$observed_on
     )
-    row.names(inat)<-((i-1)*30+1):(((i-1)*30+1)+nrow(inat)-1)
+    row.names(inat)<-((i-1)*200+1):(((i-1)*200+1)+nrow(inat)-1)
     cat("\r",paste(i,pages,sep=" / "))
     inat
   }  
@@ -771,7 +772,7 @@ a {
  width: 100vw; /* Full width */
  height: 100vh; /* Full height */
  overflow: auto; /* Enable scroll if needed */
- background-color: rgb(0,0,0); /* Fallback color */
+ background-color: var(--black); /* Fallback color */
  background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
  overscroll-behavior: contain;
 }
@@ -804,6 +805,7 @@ width: auto;
 max-width: auto;
 height: 95vmin;
 max-height: 95vmin;
+background-color: var(--black);
 }
 
 
@@ -994,10 +996,10 @@ width: 100%;
 </head>
 <a id=\"top\"></a>  
 <body>
-<!-- <img style=\"height: 4vmin;\" src=\"images/rungrasslogo.png\"> -->
+<!-- <img style=\"height: 4vmin;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/rungrasslogo.png\"> -->
 <div id=\"header\">
   <div>
-    <h1 id=\"testing1\"><a href=\"#top\"><img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrasslogotext.png\"></a></h1>
+    <h1 id=\"testing1\"><a href=\"#top\"><img id=\"testing2\" style=\"height: 9vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/rungrasslogotext.png\"></a></h1>
   </div>
   <div>
     <h2 id=\"testing3\">Guide&nbspphotographique&nbspdes&nbsppoacées,<br>cypéracées&nbspet&nbspjuncacées&nbspde&nbspla&nbspRéunion</h2>
@@ -1023,7 +1025,7 @@ width: 100%;
 <br>
 <br>
 
-<img style=\"height: 15vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"images/rungrasslogotext.png\">
+<img style=\"height: 15vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/rungrasslogotext.png\">
 <br>
 <br>
 <br>
@@ -1296,7 +1298,8 @@ cat("
     var linkText = document.getElementById(\"link\");
     
     modalsp.addEventListener('click',function(){
-    this.style.display=\"none\";
+      this.style.display=\"none\";
+      <!-- this.dataset.src = \"\"; -->
     })
     
     // Go through all of the images with our custom class
@@ -1305,9 +1308,9 @@ cat("
     // and attach our click listener for this image.
     img.onclick = function(evt) {
     console.log(evt);
+    modalImg.src = this.src;
     modalsp.style.display = \"block\";
     // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
-    <!-- modalImg.src = this.src; -->
     modalImg.src = this.dataset.src;
     captionText.innerHTML = '<a class=\"a3\">' + this.title + '</a>';
     linkText.innerHTML = '<a class=\"a2\" href=\"' + this.alt + '\" target=\"_blank\">' + this.alt + '</a>' ;
@@ -1442,9 +1445,11 @@ cat("
     // and attach our click listener for this image.
     map.onclick = function(evt) {
     console.log(evt);
+    modalMap.src = '';
+    modalMap.src = this.dataset.src;
     modalcarte.style.display = \"block\";
     // https://stackoverflow.com/questions/15320052/what-are-all-the-differences-between-src-and-data-src-attributes
-    modalMap.src = this.dataset.src;
+    <!-- modalMap.src = this.dataset.src; -->
     }
     }
     
@@ -1549,13 +1554,20 @@ if(FALSE){
     plot(st_sample(st_geometry(st_transform(gbif,st_crs(r))),10),cex=1.25,lwd=1.5,pch=21,col="grey20",bg="orange",add=TRUE)
 
   dev.off()
-  
-  
-  
+
   
 }
 
 
-
+if(FALSE){
+  
+inat$date<-as.Date(inat$date) 
+inat$month<-gsub("\\.","",format(inat$date,"%b"))
+inat$month<-factor(inat$month,levels=gsub("\\.","",format(seq.Date(as.Date("2008-01-01"),as.Date("2008-12-31"),by="month"),"%b")))
+x<-aggregate(sp~month,data=inat[inat$sp=="Hyparrhenia rufa",],FUN=length,drop=FALSE)
+  
+   
+  
+}
 
 
