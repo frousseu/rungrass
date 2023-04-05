@@ -11,6 +11,9 @@ library(jsonlite)
 library(scales)
 library(terra)
 library(tidyterra)
+library(RCurl)
+library(future)
+library(future.apply)
 
 source("https://raw.githubusercontent.com/frousseu/FRutils/master/R/colo.scale.R")
 
@@ -59,6 +62,7 @@ d$powo[d$sp=="Cyperus dubius"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipn
 d$powo[d$sp=="Paspalum conjugatum"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30011315-2"
 d$powo[d$sp=="Urochloa distachya"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:426250-1"
 d$powo[d$sp=="Aristida congesta barbicollis"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:389261-1"
+d$powo[d$sp=="Aristida congesta congesta"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:389336-1"
 d$powo[d$sp=="Eragrostis tenella insularis"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:413272-4"
 k<-d$family!="Excluded" & is.na(d$powo)
 
@@ -126,7 +130,11 @@ d$tropicos<-paste0("https://tropicos.org/name/Search?name=",tolower(gsub(" ","%2
 ### FNA links ##########################################
 
 d$fna<-paste0("http://floranorthamerica.org/",gsub(" ","_",d$sp))
-
+links<-unique(d$fna)
+plan(multisession,workers=8)
+ex<-future_lapply(links,url.exists)
+plan(sequential)
+d$fna<-ifelse(unlist(ex)[match(d$fna,links)],d$fna,NA)
 
 ### OCCS #######################
 
@@ -408,12 +416,8 @@ for(i in 1:length(lsp)){
 
 d$id<-ifelse(is.na(d$id),NA,d$id)
 
-
-
-
-#d<-d[order(as.integer(is.na(d$photo)),-as.integer(factor(d$family)),d$sp,d$rank),]
-
-d<-d[order(factor(d$family,levels=c("Poaceae","Cyperaceae","Juncaceae","Excluded")),d$sp,d$rank),]
+#d<-d[order(factor(d$family,levels=c("Poaceae","Cyperaceae","Juncaceae","Excluded")),d$sp,d$rank),]
+d<-d[order(d$sp,d$rank),]
 
 ## Functions #################
 
@@ -645,11 +649,11 @@ a {
 .imgsp {
   max-height:25vh;
   height:25vh;
-  width: 10.5vw; /* 14.26% */
+  width: 10.40vw; /* 14.26% */
   object-fit:cover;
   padding: 1px; /* 2px */
   margin: 0px; /* 2px */
-  background: var(--white); /* #EEEEEE */
+  background: #000000; /* var(--white); */
   background-origin: content-box;
   cursor: pointer;
   border-radius: 7vh;
@@ -750,7 +754,7 @@ a {
 
 .tophr {
   height: 1px;
-  color: var(--gray);
+  color: #000000; /* var(--gray); */
   border: 1px;
   background-color: var(--gray);
 }
@@ -875,7 +879,7 @@ div.left {
   position: -webkit-sticky;
   position: sticky;
   top: 6vh;
-  width: 14%; 
+  width: 16%; 
   height: 98vh; 
   float: left; 
   display: inline-block; 
@@ -884,7 +888,7 @@ div.left {
 }
 
 div.right {
-  width: 84%; 
+  width: 82%; 
   float: left; 
   display: inline-block; 
   padding-left: 1.5%;
@@ -959,8 +963,8 @@ width: 100%;
   justify-content: space-between; /* switched from default (flex-start, see below) */
   transition: 0.3s;
   z-index: 99;
-  border-bottom: 1px solid var(--gray);
-  /* background-color: var(--gray); */
+  /* border-bottom: 1px solid #000; /* var(--gray); */ */
+  /* background-color: #000; */
 }
 #header > div {
   /* width: 100px; */
@@ -1148,7 +1152,7 @@ Site australien sur les poacées très utile pour l'identification lorsque les e
     <div class=\"sticky\">
       <span class=\"p3\">Espèces</span>
     </div>
-      <p style = \"color: black; font-size: 0vh; padding: 0vh; margin-left: 1vh;\">",genus(),"</p>
+      <p style = \"color: black; font-size: 0vh; padding-top: 6vh; padding-bottom: 6vh; margin-left: 1vh;\">",genus(),"</p>
   </div>
   <div class=\"right\" style=\"\">
 
@@ -1168,7 +1172,7 @@ species_links<-function(x,i){
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
      </a>")),
     ifelse(any(grep("/NA",x$borbonica[i])),"",
-     paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
+    paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
      </a>")),
      "<a target=\"_blank\" href=\"",x$inat[i],"\">
@@ -1185,10 +1189,11 @@ species_links<-function(x,i){
      </a>
      <a target=\"_blank\" href=\"",x$powo[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
-     </a>
-     <a target=\"_blank\" href=\"",x$fna[i],"\">
+     </a>",
+     ifelse(is.na(x$fna[i]),"",
+     paste0("<a target=\"_blank\" href=\"",x$fna[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/fna.jpg\">
-     </a>
+     </a>")),"
      </a>&nbsp;&nbsp;"
   )
   res
@@ -1211,6 +1216,7 @@ uncertain<-function(x){
   if(x=="Aristida congesta barbicollis"){return("Aristida (congesta barbicollis ?)")}
   if(x=="Avenella flexuosa"){return("Avenella (flexuosa ?)")}
   if(x=="Urochloa brizantha"){return("Urochloa (brizantha ?)")}
+  if(x=="Aristida congesta congesta"){return("Aristida (congesta congesta ?)")}
   x
 }
 
@@ -1223,7 +1229,7 @@ species_header<-function(x,i){
            ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">&#9660</button>&nbsp")),"
        </div>
        <div class=\"inner\">
-       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\"></span>
+       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\" loading=\"lazy\"></span>
        </div>
      </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p class=\"desc\"><br>",x$id[i],"<br><br></p></div>")),"
      
@@ -1239,7 +1245,7 @@ species_photo<-function(x,i){
     large<-x$photo[i]
   }
   cat(paste0(
-    "<img class=\"imgsp\" src=\"",gsub("/original.","/small.",x$photo[i]),"\" data-src=\"",large,"\" title=\"",paste(x$attribution[i]),"\" alt=\"",paste(x$obs[i]),"\">"
+    "<img class=\"imgsp\" src=\"",gsub("/original.","/small.",x$photo[i]),"\" data-src=\"",large,"\" title=\"",paste(x$attribution[i]),"\" alt=\"",paste(x$obs[i]),"\" loading=\"lazy\">"
   ))
 }
 
