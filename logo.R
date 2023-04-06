@@ -275,7 +275,16 @@ file.show("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
 
 
 
+lf<-list.files("C:/Users/God/Downloads",pattern="large",full=TRUE)
 
-
-
+im<-image_read(lf[1])
+im<-image_rotate(im,90)
+im1<-image_scale(im,"500")
+#im<-image_quantize(im,2,colorspace="gray",dither=FALSE)
+#im<-image_threshold(im,type="black",th="50%")
+im<-image_lat(im)
+im<-image_scale(im,"500")
+par(mfrow=c(1,2))
+plot(im1)
+plot(im)
 

@@ -140,7 +140,44 @@ d$fna<-ifelse(unlist(ex)[match(d$fna,links)],d$fna,NA)
 
 if(FALSE){
   
-#### GBIF occs ##################m
+### INPN occs ########################  
+
+inpnfiles<-list.files("C:/Users/God/Documents/rungrass",full=TRUE,pattern="records")
+inpnfiles<-grep(".csv",inpnfiles,value=TRUE)
+inpn<-rbindlist(lapply(inpnfiles,fread,select=1:117,encoding="UTF-8"))
+inpn<-inpn[espece!="",]
+rev(sort(table(inpn$espece)))[1:20]
+inpn<-inpn[!is.na(longitude),]
+inpn<-inpn[-grep("iNaturalist.org",descriptionJeuDonnees),]
+inpn<-inpn[-grep("GBIF",descriptionJeuDonnees),]
+inpn[,sp:=espece,]
+
+changes<-list( # the rest is transformed below with the tax code
+  c("Cenchrus setiger","Cenchrus setigerus"),
+  c("Ceratochloa cathartica","Bromus catharticus"), 
+  c("Dactyloctenium ctenioides","Dactyloctenium ctenoides"),
+  c("Panicum hubbardii","Acroceras hubbardii"),
+  c("Panicum juniperinum","Panicum lycopodioides"),
+  c("Panicum pseudowoeltzkowii","Panicum woeltzkowii"),
+  c("Sporobolus indicus","Sporobolus indicus"),
+  c("Schedonorus arundinaceus","Lolium arundinaceum"),
+  c("Urochloa distachyos","Urochloa distachya"),
+  c("Setaria flavida","Paspalidium flavidum"),
+  c("Setaria geminata","Paspalidium geminatum")
+) 
+changes<-as.data.table(do.call("rbind",changes))
+setnames(changes,c("old","new"))
+inpn[changes, sp := new, on = .(sp = old)]
+
+table(inpn$sp[!inpn$sp%in%d$sp])
+
+inpn[,source:="inpn"]
+inpn[,lon:=longitude]
+inpn[,lat:=latitude]
+
+inpn<-st_as_sf(inpn[,c("sp","source","lon","lat")],coords=c("lon","lat"),crs=4326)
+
+#### GBIF occs #######################
   
 # maybe use all suggested species names (e.g. E. tenella not fully covered)
 # remove iNat with datasetName
