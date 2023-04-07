@@ -7,49 +7,26 @@ library(FRutils)
 library(webshot2)
 library(magick)
 
+
 #########################################
-### Extyract spikes #####################
+### Extract spike #######################
 #########################################
 
-##img<-image_read("https://inaturalist-open-data.s3.amazonaws.com/photos/178794881/original.jpeg")
-##img<-image_crop(im,"x1200+0+750",gravity="south")
-##img<-image_read("https://inaturalist-open-data.s3.amazonaws.com/photos/48714761/original.jpg")
-
-
-
-#img<-image_read("https://inaturalist-open-data.s3.amazonaws.com/photos/256906882/original.jpg")
-#im<-image_quantize(img,4,dither=FALSE)
-#plot(im)
-#ims<-image_split(im)
-#plot(ims[2])
-#par(mfrow=n2mfrow(length(ims),asp=1.55),mar=c(1,1,1,1))
-#lapply(1:length(ims),function(i){
-#  plot(ims[i])
-#})
-#im<-image_crop(ims[1],"200x950",gravity="northwest")
-#im<-image_rotate(im,23)
-#im<-image_chop(im,"180x450")
-#table(image_raster(im)[,3])
-#plot(im)
-#image_write(im,"C:/Users/God/Downloads/newlogo1.png") # edit spike here
-
-
-
-img<-image_read("https://inaturalist-open-data.s3.amazonaws.com/photos/256909900/original.jpg") |> image_crop("200x1100+100+100",gravity="northwest")
-im<-image_quantize(img,3,dither=FALSE)
-plot(im)
-ims<-image_split(im)
-plot(ims[2])
-par(mfrow=n2mfrow(length(ims),asp=1.55),mar=c(1,1,1,1))
-lapply(1:length(ims),function(i){
-  plot(ims[i])
+lf<-list.files("C:/Users/God/Downloads/cencaf",full=TRUE)
+lapply(lf,function(i){
+  img<-image_read(i)# |> image_crop("200x1100+100+100",gravity="northwest")
+  im<-image_quantize(img,2,colorspace="gray",dither=FALSE)
+  plot(im,main=i)
 })
-#im<-image_crop(ims[1],"200x950",gravity="northwest")
-im<-image_rotate(ims[2],8)
-#im<-image_chop(im,"80x450")
-table(image_raster(im)[,2])
-plot(im)
-#image_write(im,"C:/Users/God/Downloads/newlogo2.png") # edit spike here
+i<-lf[16] # "C:/Users/God/Downloads/cencaf/20230401_181233.jpg"
+img<-image_read(i)# |> image_crop("200x1100+100+100",gravity="northwest")
+#img<-image_rotate(img,90)
+im<-image_quantize(img,2,colorspace="gray",dither=FALSE)
+im<-image_negate(im)
+plot(im,main=i)
+#image_write(im,"C:/Users/God/Downloads/spikes1.png") # edit spike here
+# need to clear blothes here with paint to leave only the right spike
+spikes1<-image_read("C:/Users/God/Documents/rungrass/spikes.png") # edit spike here
 
 
 #####################################
@@ -60,15 +37,17 @@ plot(im)
 #head(rev(sort(table(col[,3])))) #adjustcolor("#4d1d2bff",0.8)
 
 col<-colo.scale(1:100,c("red4","purple4"))[20]
-#col<-"gold"
-spike<-image_trim(image_read("C:/Users/God/Downloads/newlogo2.png"))
+spike<-image_trim(image_read("C:/Users/God/Documents/rungrass/spikes.png"))
 spike<-image_quantize(spike,2) |> image_split()
 spike<-image_trim(spike[1])
-spike<-image_fill(spike,col,"+36+250",fuzz=2)
-spike<-image_crop(spike,"100x800")
+spike<-image_crop(spike,"900x5000+900+0")
+spike<-image_trim(spike)
+spike<-image_fill(spike,col,"+445+1600",fuzz=2)
+spike<-image_rotate(spike,-10)
 plot(spike)
+
 spikes<-lapply(c(-60,-35,0,35,60),function(i){
-  if(i>0){
+  if(i<0){
     res<-image_flop(spike)
   }else{
     res<-spike
@@ -85,21 +64,15 @@ spikes<-lapply(c(-60,-35,0,35,60),function(i){
   res
 })
 spikes<-do.call("c",spikes)
-#tuft<-image_append(spikes) |> image_flip()
-#spikes<-image_coalesce(spikes)
-central<-image_border(spikes[3],"#ffffff00","1000x200")
-#central<-image_border(central,"blue","2x2")
+central<-image_border(spikes[3],"#ffffff00","5000x500")
 w<-image_info(central)$width/2
-tuft<-image_composite(central,spikes[2],operator="over",gravity="northwest",offset=paste0("+",w-510,"+350"))
-tuft<-image_composite(tuft,spikes[1],operator="over",gravity="northwest",offset=paste0("+",w-760,"+625"))
-tuft<-image_composite(tuft,spikes[4],operator="over",gravity="northwest",offset=paste0("+",w-20,"+350"))
-tuft<-image_composite(tuft,spikes[5],operator="over",gravity="northwest",offset=paste0("+",w-75,"+700"))
+tuft<-image_composite(central,spikes[2],operator="over",gravity="northwest",offset=paste0("+",w-2210,"+950"))
+tuft<-image_composite(tuft,spikes[1],operator="over",gravity="northwest",offset=paste0("+",w-3260,"+1900"))
+tuft<-image_composite(tuft,spikes[4],operator="over",gravity="northwest",offset=paste0("+",w+0,"+900"))
+tuft<-image_composite(tuft,spikes[5],operator="over",gravity="northwest",offset=paste0("+",w+0,"+2000"))
 tuft<-image_fill(tuft,"white","+1+1",fuzz=20)
 #tuft<-image_scale(tuft,"400")
 plot(tuft)
-
-
-
 
 
 ##############################################
@@ -115,7 +88,6 @@ table(ras[,3])
 cols<-t(col2rgb(ras[,3]))
 r<-rast(cbind(ras[,1:2],cols))
 r<-flip(r)
-#RGB(r)<-1:3
 r<-r[[2]]
 
 run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
@@ -128,6 +100,8 @@ ys<-st_coordinates(st_centroid(run))[,2]-400
 run<-run-c(xs,ys)
 centroid<-st_centroid(run)
 run<-(run-centroid)*0.008+centroid
+run<-run+c(10,40)
+
 
 # https://stackoverflow.com/questions/73387889/how-to-automate-plotting-3-different-regular-polygons-recursively
 dodecagon <- function(x = 600, y = 400, r = 300) {
@@ -154,24 +128,26 @@ volcano<-volcano[volcano$green==0,]
 volcano<-st_cast(volcano,"POLYGON")
 volcano<-volcano[which.max(st_area(volcano)),]
 rest<-st_difference(run,volcano)
-
+plot(r)
+plot(run,add=TRUE)
+plot(volcano,add=TRUE)
 
 
 cols<-c("#43cd80","#fff8dc")
 #cols<-c("#43cd80","#fcfc16ff")
-png("C:/Users/God/Downloads/rungrasslogo.png",width=5,height=5,units="in",res=300)
+png("C:/Users/God/Documents/rungrass/rungrasslogo.png",width=5,height=5,units="in",res=300)
 par(bg="#111111")
 plot(st_geometry(b),col=cols[1],border=NA,axes=FALSE)
 #plot(r,mar=c(0,0,0,0),col=cols,legend=FALSE,axes=FALSE,add=TRUE)
 plot(rest,col=cols[2],add=TRUE,border=FALSE)
 plot(volcano,col=cols[1],add=TRUE,border=FALSE)
 dev.off()
-logo<-image_read("C:/Users/God/Downloads/rungrasslogo.png") |> image_trim()
+logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png") |> image_trim()
 grass<-image_fill(tuft,"#ffffff00","+1+1") |> image_trim()
 grass<-image_fill(grass,"#ffffff00","+1100+1")
-grass<-image_scale(grass,"600")
+grass<-image_scale(grass,"700")
 cov<-image_quantize(logo,3) |> image_split()
-logo<-image_composite(logo,grass,offset="+116+125")
+logo<-image_composite(logo,grass,offset="+63+135")
 logo<-image_composite(logo,cov[1])
 logo<-image_composite(logo,cov[2])
 logo<-image_scale(logo,"900")
@@ -181,11 +157,11 @@ logo<-image_fill(logo,"#ffffff00","+1+1")
 logo<-image_fill(logo,"#ffffff00",paste0("+",h-1,"+",w-1))
 logo<-image_fill(logo,"#ffffff00",paste0("+",1,"+",w-1))
 logo<-image_fill(logo,"#ffffff00",paste0("+",h-1,"+",1))
-image_write(logo,"C:/Users/God/Downloads/rungrasslogo.png")
-image_write(image_quantize(image_scale(logo,"500"),100),"C:/Users/God/Downloads/rungrasslogo500.png")
-file.show("C:/Users/God/Downloads/rungrasslogo.png")
+image_write(logo,"C:/Users/God/Documents/rungrass/rungrasslogo.png")
+image_write(image_quantize(image_scale(logo,"500"),100),"C:/Users/God//Documents/rungrass/rungrasslogo500.png")
+file.show("C:/Users/God/Documents/rungrass/rungrasslogo.png")
 
-logo<-image_read("C:/Users/God/Downloads/rungrasslogo.png")
+logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
 #logo<-image_motion_blur(logo,radius=5)
 logo<-image_noise(logo)
 #logo<-image_emboss(logo)
@@ -249,11 +225,18 @@ webshot("C:/Users/God/Documents/rungrass/rungrasslogo.html","C:/Users/God/Docume
 
 logotext<-image_read("C:/Users/God/Documents/rungrass/rungrasslogotext.png") |> image_trim()
 #logotext<-image_border(logotext,"#111111","500")
-logo<-image_read("C:/Users/God/Downloads/rungrasslogo.png")
+logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
 logo<-image_scale(logo,paste0(image_info(logotext)$height))
 logo<-image_background(logo,"#111111")
 logo<-image_border(logo,"#111111","20")
 logotext<-image_append(c(logotext,logo)) |> image_trim()
+logotext<-image_border(logotext,"#111111","10x10")
+image_write(logotext,"C:/Users/God/Documents/rungrass/rungrasslogotext.png",depth=16)
+logotext<-image_read("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
+logotext<-image_fill(logotext,"#11111100","+1+1",fuzz=10)
+logotext<-image_fill(logotext,"#11111100","+60+100",fuzz=10)
+logotext<-image_fill(logotext,"#11111100","+1030+100",fuzz=10)
+logotext<-image_fill(logotext,"#11111100","+1210+100",fuzz=10)
 image_write(logotext,"C:/Users/God/Documents/rungrass/rungrasslogotext.png",depth=16)
 file.show("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
 #logotrans<-image_background(logotext,"none")
@@ -272,19 +255,16 @@ file.show("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
 #plot(r)
 #plot(st_geometry(x),add=TRUE)
 
+#lf<-list.files("C:/Users/God/Downloads",pattern="large",full=TRUE)
 
-
-
-lf<-list.files("C:/Users/God/Downloads",pattern="large",full=TRUE)
-
-im<-image_read(lf[1])
-im<-image_rotate(im,90)
-im1<-image_scale(im,"500")
-#im<-image_quantize(im,2,colorspace="gray",dither=FALSE)
-#im<-image_threshold(im,type="black",th="50%")
-im<-image_lat(im)
-im<-image_scale(im,"500")
-par(mfrow=c(1,2))
-plot(im1)
-plot(im)
+#im<-image_read(lf[1])
+#im<-image_rotate(im,90)
+#im1<-image_scale(im,"500")
+##im<-image_quantize(im,2,colorspace="gray",dither=FALSE)
+##im<-image_threshold(im,type="black",th="50%")
+#im<-image_lat(im)
+#im<-image_scale(im,"500")
+#par(mfrow=c(1,2))
+#plot(im1)
+#plot(im)
 
