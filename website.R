@@ -472,7 +472,7 @@ genus<-function(i){
         ans[1]
       }
     })
-    ge<-c(ge,x$sp)
+    ge<-c(ge,gsub(" ","_",x$sp))
     ge1<-ge
     ge1[1]<-ge1[2]
     ge2<-c(ge[1],paste0("&nbsp;&nbsp;",sp))
@@ -1260,7 +1260,7 @@ uncertain<-function(x){
 
 species_header<-function(x,i){
   cat(paste0(
-    "<div id=\"",x$sp[i],"\" class=\"headersp\">
+    "<div id=\"",gsub(" ","_",x$sp[i]),"\" class=\"headersp\">
        <div class=\"inner\">
            <span class=\"p2\">",uncertain(x$sp[i]),"</span>"
            ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">&#9660</button>&nbsp")),"
