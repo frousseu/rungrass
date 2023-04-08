@@ -14,6 +14,7 @@ library(tidyterra)
 library(RCurl)
 library(future)
 library(future.apply)
+library(data.table)
 
 source("https://raw.githubusercontent.com/frousseu/FRutils/master/R/colo.scale.R")
 
@@ -138,184 +139,202 @@ d$fna<-ifelse(unlist(ex)[match(d$fna,links)],d$fna,NA)
 
 ### OCCS #######################
 
+inpn_update<-TRUE
+gbif_update<-TRUE
+inat_update<-TRUE
+
 if(FALSE){
   
-### INPN occs ########################  
-
-inpnfiles<-list.files("C:/Users/God/Documents/rungrass",full=TRUE,pattern="records")
-inpnfiles<-grep(".csv",inpnfiles,value=TRUE)
-inpn<-rbindlist(lapply(inpnfiles,fread,select=1:117,encoding="UTF-8"))
-inpn<-inpn[espece!="",]
-rev(sort(table(inpn$espece)))[1:20]
-inpn<-inpn[!is.na(longitude),]
-inpn<-inpn[-grep("iNaturalist.org",descriptionJeuDonnees),]
-inpn<-inpn[-grep("GBIF",descriptionJeuDonnees),]
-inpn[,sp:=espece,]
-
-changes<-list( # the rest is transformed below with the tax code
-  c("Cenchrus setiger","Cenchrus setigerus"),
-  c("Ceratochloa cathartica","Bromus catharticus"), 
-  c("Dactyloctenium ctenioides","Dactyloctenium ctenoides"),
-  c("Panicum hubbardii","Acroceras hubbardii"),
-  c("Panicum juniperinum","Panicum lycopodioides"),
-  c("Panicum pseudowoeltzkowii","Panicum woeltzkowii"),
-  c("Sporobolus indicus","Sporobolus indicus"),
-  c("Schedonorus arundinaceus","Lolium arundinaceum"),
-  c("Urochloa distachyos","Urochloa distachya"),
-  c("Setaria flavida","Paspalidium flavidum"),
-  c("Setaria geminata","Paspalidium geminatum")
-) 
-changes<-as.data.table(do.call("rbind",changes))
-setnames(changes,c("old","new"))
-inpn[changes, sp := new, on = .(sp = old)]
-
-table(inpn$sp[!inpn$sp%in%d$sp])
-
-inpn[,source:="inpn"]
-inpn[,lon:=longitude]
-inpn[,lat:=latitude]
-
-inpn<-st_as_sf(inpn[,c("sp","source","lon","lat")],coords=c("lon","lat"),crs=4326)
-
-#### GBIF occs #######################
-  
-# maybe use all suggested species names (e.g. E. tenella not fully covered)
-# remove iNat with datasetName
-
   run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
   run<-st_buffer(st_geometry(run),50)
   
   library(basemaps)
   sat<-basemap_raster(st_bbox(st_transform(run,3857)),map_res=1, map_service = "esri", map_type = "world_imagery")
   sat<-rast(sat)
-  #plotRGB(sat,maxcell=5000000)
+  #plotRGB(sat,maxcell=5000000)  
   
-  k<-d$family!="Excluded"
-  sp<-unique(d$sp[k])#[1:2]
-  key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
-  m<-match(sp,d$sp)
-  other<-d$other[m]
-  flore<-d$flore[m]
-  index<-d$index[m]
-  #i<-which(sp=="Aristida setacea")
-  occs<-foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
-    if(!is.na(other[i])){
-      sps<-c(sp[i],flore[i],index[i],strsplit(other[i],", ")[[1]])
-      sps<-unique(sps[!is.na(sps)])
-      keys<-sapply(sps,function(j){
-        as.data.frame(name_backbone(name=j, rank='species', kingdom='plants'))$usageKey[1]
-      })
-    }else{
-      sps<-sp[i]
-      keys<-key[i]
-    }
-    l<-lapply(seq_along(sps),function(k){
-      spoccs<-as.data.frame(occ_search(taxonKey=keys[k],limit=2000,hasCoordinate=TRUE,country="RE")$data)
-      if(nrow(spoccs)==0){
-        NULL
+  
+  
+  ### INPN occs ########################  
+  
+  # manual download from openobs  
+  if(inpn_update){
+    inpnfiles<-list.files("C:/Users/God/Documents/rungrass",full=TRUE,pattern="records")
+    inpnfiles<-grep(".csv",inpnfiles,value=TRUE)
+    inpn<-rbindlist(lapply(inpnfiles,fread,select=1:117,encoding="UTF-8"))
+    inpn<-inpn[espece!="",]
+    #rev(sort(table(inpn$espece)))[1:20]
+    inpn<-inpn[!is.na(longitude),]
+    inpn<-inpn[-grep("iNaturalist.org",descriptionJeuDonnees),]
+    inpn<-inpn[-grep("GBIF",descriptionJeuDonnees),]
+    inpn[,sp:=espece,]
+
+    changes<-list( # the rest is transformed below with the tax code
+      c("Cenchrus setiger","Cenchrus setigerus"),
+      c("Ceratochloa cathartica","Bromus catharticus"), 
+      c("Dactyloctenium ctenioides","Dactyloctenium ctenoides"),
+      c("Panicum hubbardii","Acroceras hubbardii"),
+      c("Panicum juniperinum","Panicum lycopodioides"),
+      c("Panicum pseudowoeltzkowii","Panicum voeltzkowii"),
+      c("Sporobolus indicus","Sporobolus indicus"),
+      c("Schedonorus arundinaceus","Lolium arundinaceum"),
+      c("Urochloa distachyos","Urochloa distachya"),
+      c("Setaria flavida","Paspalidium flavidum"),
+      c("Setaria geminata","Paspalidium geminatum"),
+      c("Asterochaete borbonica","Carpha borbonica"),
+      c("Asterochaete nitens","Carpha nitens"),
+      c("Cyperus stolonifer","Cyperus stoloniferus")
+    ) 
+    changes<-as.data.table(do.call("rbind",changes))
+    setnames(changes,c("old","new"))
+    inpn[changes, sp := new, on = .(sp = old)]
+  
+    table(inpn$sp[!inpn$sp%in%d$sp])
+  
+    inpn[,source:="inpn"]
+    inpn[,lon:=longitude]
+    inpn[,lat:=latitude]
+    inpn[,date:=dateObservation]
+    inpn[,observer:=observateur]
+    inpn[,sp:=espece]
+    inpn[,dataset:=libelleJeuDonnees]
+  
+    inpn<-st_as_sf(inpn,coords=c("lon","lat"),crs=4326)
+    st_geometry(inpn)<-"geometry"
+    inpn<-st_transform(inpn,st_crs(run))
+    st_write(inpn,"C:/Users/God/Documents/rungrass/inpn.gpkg",append=FALSE)
+  }else{
+    inpn<-st_read("C:/Users/God/Documents/rungrass/inpn.gpkg")
+  }
+  #### GBIF occs #######################
+  
+  # maybe use all suggested species names (e.g. E. tenella not fully covered)
+  # remove iNat with datasetName
+  if(gbif_update){
+    k<-d$family!="Excluded"
+    sp<-unique(d$sp[k])#[1:2]
+    key<-sapply(strsplit(d$gbif[match(sp,d$sp)],"/"),tail,1)
+    m<-match(sp,d$sp)
+    other<-d$other[m]
+    flore<-d$flore[m]
+    index<-d$index[m]
+    #i<-which(sp=="Aristida setacea")
+    occs<-foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
+      if(!is.na(other[i])){
+        sps<-c(sp[i],flore[i],index[i],strsplit(other[i],", ")[[1]])
+        sps<-unique(sps[!is.na(sps)])
+        keys<-sapply(sps,function(j){
+          as.data.frame(name_backbone(name=j, rank='species', kingdom='plants'))$usageKey[1]
+        })
       }else{
-        spoccs$sp<-sp[i]
-        spoccs
+        sps<-sp[i]
+        keys<-key[i]
       }
-    })
-    Sys.sleep(0.2) # not to make too many requests, but not sure it is relevant
-    cat("\r",paste(i,length(sp),sep=" / "))
-    l
-  }
-  gbif<-unlist(occs, recursive=FALSE)
-  gbif<-gbif[!sapply(gbif,is.null)]
-  gbif<-lapply(gbif,function(i){
-    if(!any(names(i)=="datasetName")){
-      i$datasetName<-NA
-      i
-    }else{
-      i
+      l<-lapply(seq_along(sps),function(k){
+        spoccs<-as.data.table(occ_data(taxonKey=keys[k],limit=2000,hasCoordinate=TRUE,country="RE")$data)
+        if(nrow(spoccs)==0){
+          NULL
+        }else{
+          spoccs$sp<-sp[i]
+          spoccs
+        }
+      })
+      Sys.sleep(0.2) # not to make too many requests, but not sure it is relevant
+      cat("\r",paste(i,length(sp),sep=" / "))
+      l
     }
-  })
-  gbif<-lapply(gbif,function(i){
-    if(!any(names(i)=="coordinateUncertaintyInMeters")){
-      i$coordinateUncertaintyInMeters<-NA
-      i
-    }else{
-      i
+    gbif<-unlist(occs, recursive=FALSE)
+    gbif<-rbindlist(gbif,fill=TRUE)
+    gbif[,date:=as.Date(paste(year,month,day,sep="-"),"%Y-%m-%d")]
+    
+    ### removes TAXREF checklist dataset https://doi.org/10.15468/frrkp9
+    #gbif<-gbif[gbif$datasetKey!="6ed43f52-25d1-4d56-a821-63a8564b81f6",]
+    #gbif<-gbif[gbif$datasetKey!="91aa3d5b-6f77-4135-a823-cef438a60dfa",]
+    g<-intersect(grep("TAXREF",gbif$nameAccordingTo),grep("Checklist",gbif$nameAccordingTo))
+    if(any(g)){
+      gbif<-gbif[-g,]
     }
-  })
-  gbif<-lapply(gbif,function(i){
-    if(!any(names(i)=="nameAccordingTo")){
-      i$nameAccordingTo<-NA
-      i
-    }else{
-      i
+    ### removes iNat RG obs
+    g<-grep("iNaturalist",gbif$datasetName)
+    if(any(g)){
+      gbif<-gbif[-g,]
     }
-  })
-  gbif<-lapply(gbif,function(i){i[,c("sp","decimalLongitude","decimalLatitude","datasetName","datasetKey","coordinateUncertaintyInMeters","nameAccordingTo")]})
-  gbif<-do.call("rbind",gbif)
-  ### removes TAXREF checklist dataset https://doi.org/10.15468/frrkp9
-  #gbif<-gbif[gbif$datasetKey!="6ed43f52-25d1-4d56-a821-63a8564b81f6",]
-  #gbif<-gbif[gbif$datasetKey!="91aa3d5b-6f77-4135-a823-cef438a60dfa",]
-  g<-intersect(grep("TAXREF",gbif$nameAccordingTo),grep("Checklist",gbif$nameAccordingTo))
-  if(any(g)){
-    gbif<-gbif[-g,]
+    
+    gbif[,source:="gbif"]
+    gbif[,observer:=recordedBy]
+    gbif[,lon:=decimalLongitude]
+    gbif[,lat:=decimalLatitude]
+    gbif[,dataset:=datasetName]
+    delete<-names(gbif)[ which(sapply(gbif,class)=="list")]
+    gbif[,(delete):=NULL]
+    gbif<-st_as_sf(gbif,coords=c("lon","lat"),crs=4326)
+    gbif<-st_transform(gbif,st_crs(run))
+    st_geometry(gbif)<-"geometry"
+    st_write(gbif,"C:/Users/God/Documents/rungrass/gbif.gpkg",append=FALSE)
+  }else{
+    gbif<-st_read("C:/Users/God/Documents/rungrass/gbif.gpkg")
   }
-  ### removes iNat RG obs
-  g<-grep("iNaturalist",gbif$datasetName)
-  if(any(g)){
-    gbif<-gbif[-g,]
+
+  ### iNat occs ##############################
+    
+  # include reviewed_by me 
+  # https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
+
+  if(inat_update){
+    api<-"https://api.inaturalist.org/v1/observations?geo=true&verifiable=true&place_id=8834&taxon_id=47434%2C47161%2C52642&hrank=species&lrank=subspecies&order=desc&order_by=created_at&page=1&per_page=200"
+    x<-fromJSON(api)
+    pages<-ceiling(x$total_results/200)
+  
+    inatjson<-foreach(i=1:pages,.packages=c("jsonlite")) %do% {
+      page<-paste0("page=",i)
+      x<-fromJSON(gsub("page=1",page,api))
+      inat<-data.frame(
+        sp=x$results$taxon$name,
+        user=x$results$user$login,
+        location=x$results$location,
+        grade=x$results$quality_grade,
+        date=x$results$observed_on
+      )
+      row.names(inat)<-((i-1)*200+1):(((i-1)*200+1)+nrow(inat)-1)
+      cat("\r",paste(i,pages,sep=" / "))
+      inat
+    }  
+    inat<-do.call("rbind",inatjson)
+    inat<-setDT(inat)
+    inat<-inat[grade=="research" | user=="frousseu",]
+    inat[,lon:=as.numeric(sapply(strsplit(location,","),"[",2))]
+    inat[,lat:=as.numeric(sapply(strsplit(location,","),"[",1))]
+    inat[,source:="inat"]
+    inat[,observer:=user]
+    inat[,dataset:="iNaturalist"]
+    inat<-st_as_sf(inat,coords=c("lon","lat"),crs=4326)
+    inat<-st_transform(inat,st_crs(run))
+    st_write(inat,"C:/Users/God/Documents/rungrass/inat.gpkg",append=FALSE)
+  }else{
+    inat<-st_read("C:/Users/God/Documents/rungrass/inat.gpkg")
   }
-  gbif<-st_as_sf(gbif,coords=c("decimalLongitude","decimalLatitude"),crs=4326)
-  gbif<-st_transform(gbif,st_crs(run))
-  gbif$source<-"gbif"
-  plot(st_geometry(run))
-  plot(st_geometry(gbif),add=TRUE,pch=1)
+  
+  keep<-c("sp","source","observer","date","dataset")
+  occs<-rbind(inpn[,keep],gbif[,keep],inat[,keep])
+  dupnames<-c("sp","date","observer")
 
-### iNat occs ##############################
+  notdups<-!duplicated(as.data.frame(occs[,dupnames])) | occs$source=="inat"
+  occs<-occs[notdups,]
   
-# include reviewed_by me 
-# https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
-
-  api<-"https://api.inaturalist.org/v1/observations?geo=true&verifiable=true&place_id=8834&taxon_id=47434%2C47161%2C52642&hrank=species&lrank=subspecies&order=desc&order_by=created_at&page=1&per_page=200"
-  x<-fromJSON(api)
-  pages<-ceiling(x$total_results/200)
-
-  inatjson<-foreach(i=1:pages,.packages=c("jsonlite")) %do% {
-    page<-paste0("page=",i)
-    x<-fromJSON(gsub("page=1",page,api))
-    inat<-data.frame(
-      sp=x$results$taxon$name,
-      user=x$results$user$login,
-      location=x$results$location,
-      grade=x$results$quality_grade,
-      date=x$results$observed_on
-    )
-    row.names(inat)<-((i-1)*200+1):(((i-1)*200+1)+nrow(inat)-1)
-    cat("\r",paste(i,pages,sep=" / "))
-    inat
-  }  
-  inat<-do.call("rbind",inatjson)
-  inat$lon<-as.numeric(sapply(strsplit(inat$location,","),"[",2))
-  inat$lat<-as.numeric(sapply(strsplit(inat$location,","),"[",1))
-  inat<-st_as_sf(inat,coords=c("lon","lat"),crs=4326)
-  inat<-st_transform(inat,st_crs(run))
-  #plot(st_geometry(run))
-  #plot(st_geometry(inat),add=TRUE,pch=1)
-  inat<-inat[inat$grade=="research" | inat$user=="frousseu",]
-  inat$source<-"inat"
   
-  occs<-rbind(gbif[,c("sp","source")],inat[,c("sp","source")])
-  #plot(st_geometry(run))
-  #plot(st_geometry(occs),add=TRUE,pch=1)
-  st_write(occs,"C:/Users/God/Documents/rungrass/occs.gpkg",append=FALSE)
-  occsold<-st_read("C:/Users/God/Documents/rungrass/occs.gpkg")
-  st_geometry(occsold)<-"geometry"
   
-  occs1<-as.data.frame(occs)
-  occs1$geometry<-as.character(occs1$geometry)
-  occs2<-as.data.frame(occsold)
-  occs2$geometry<-as.character(occs2$geometry)
-  updates<-unique(anti_join(occs1,occs2)$sp)
-  if(length(updates)==0){stop("No species to update")}
+  #st_write(occs,"C:/Users/God/Documents/rungrass/occs.gpkg",append=FALSE)
+  #occsold<-st_read("C:/Users/God/Documents/rungrass/occs.gpkg")
+  #st_geometry(occsold)<-"geometry"
   
-### Maps ####################
+  #occs1<-as.data.frame(occs)
+  #occs1$geometry<-as.character(occs1$geometry)
+  #occs2<-as.data.frame(occsold)
+  #occs2$geometry<-as.character(occs2$geometry)
+  #updates<-unique(anti_join(occs1,occs2)$sp)
+  #if(length(updates)==0){stop("No species to update")}
+  
+  ### Maps ####################
 
 # https://geoservices.ign.fr/bdalti  
     
@@ -351,8 +370,9 @@ inpn<-st_as_sf(inpn[,c("sp","source","lon","lat")],coords=c("lon","lat"),crs=432
   pcol<-list(
     #inat=adjustcolor("forestgreen",0.75),
     #gbif=adjustcolor("gold",0.75),
-    inat=adjustcolor("gold",0.75),
+    inat=adjustcolor("chartreuse3",0.75),
     gbif=adjustcolor("gold",0.75),
+    inpn=adjustcolor("deepskyblue3",0.75),
     #colgrad=grey(seq(0.3,1,length.out=100))
     #colgrad=colo.scale(200,c("grey90","lightgoldenrod","seagreen3","forestgreen","darkgreen","saddlebrown","sienna4","brown")),
     colgrad=colo.scale(200,c("lightgoldenrod","seagreen3","forestgreen","darkgreen","darkgreen","saddlebrown","sienna4","brown"))
@@ -365,27 +385,41 @@ inpn<-st_as_sf(inpn[,c("sp","source","lon","lat")],coords=c("lon","lat"),crs=432
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])#[1:10]
   #sp<-updates
-  occs2<-st_transform(occs,crs(hill))
+  occs2<-st_transform(occs,3857)
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
     x<-occs2[which(occs2$sp==sp[i]),]
     
     ### small
-    png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"),height=100,width=100*mult,units="px")
+    png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"),height=500,width=500*mult,units="px")
     par(mar=c(0,0,0,0),oma=c(0,0,0,0),bg="#111111")
     #plot(st_geometry(run),col=alpha("#FFF8DC",0.95),border=NA)
-    plot(hill2,col=grey(0:100/100),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
-    plot(r2,col=adjustcolor(pcol$colgrad,0.40),legend=FALSE,mar=c(0,0,0,0),axes=FALSE,add=TRUE)
+    #plot(hill2,col=grey(0:100/100),legend=FALSE,mar=c(0,0,0,0),axes=FALSE)
+    #plot(r2,col=adjustcolor(pcol$colgrad,0.40),legend=FALSE,mar=c(0,0,0,0),axes=FALSE,add=TRUE)
+    #par(bg="grey15")
+    #plot(hill,col=grey(0:100/100),axes=FALSE, legend=FALSE, mar=c(0,0,0,0),maxcell=1000000)
+    #plot(r,col=adjustcolor(colo.scale(1:200,pcol$colgrad),0.30),axes=FALSE,legend=FALSE,add=TRUE,maxcell=1000000)
+    plotRGB(mask(sat,vect(st_transform(st_buffer(run,1000),st_crs(sat)))),axes=FALSE,colNA="#111111")
+    
+    
     xgbif<-x[x$source=="gbif",]
     if(nrow(xgbif)>0){
-      plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=1.75,xpd=TRUE,add=TRUE)
+      plot(st_geometry(xgbif),pch=21,bg=pcol$gbif,col=adjustcolor("black",0.7),lwd=1,cex=5,xpd=TRUE,add=TRUE)
+    }
+    xinpn<-x[x$source=="inpn",]
+    if(nrow(xinpn)>0){
+      plot(st_geometry(xinpn),pch=21,bg=pcol$inpn,col=adjustcolor("black",0.7),lwd=1,cex=5,xpd=TRUE,add=TRUE)
     }
     xinat<-x[x$source=="inat",]
     if(nrow(xinat)>0){
-      plot(st_geometry(xinat),pch=21,bg=pcol$inat,col=adjustcolor("black",0.7),lwd=1,cex=1.75,xpd=TRUE,add=TRUE)
-      plot(st_geometry(xinat),pch=16,col="black",cex=0.55,xpd=TRUE,add=TRUE)
+      plot(st_geometry(xinat),pch=21,bg=pcol$inat,col=adjustcolor("black",0.7),lwd=1,cex=5,xpd=TRUE,add=TRUE)
+      #plot(st_geometry(xinat),pch=16,col="black",cex=0.55,xpd=TRUE,add=TRUE)
     }
-    mtext(side=3,adj=0.99,line=-1.75,text="En",col=grey(0.85),cex=1.25,font=1,xpd=TRUE)
+    mtext(side=3,adj=0.99,line=-5,text="En",col=grey(0.85),cex=8,font=1,xpd=TRUE)
     dev.off()
+    im<-image_read(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
+    im<-image_scale(im,"150")
+    im<-image_quantize(im,100,dither=FALSE)
+    image_write(im,paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
     
     ### large
     png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"),width=5,height=4.5,units="in",res=300)
@@ -394,16 +428,18 @@ inpn<-st_as_sf(inpn[,c("sp","source","lon","lat")],coords=c("lon","lat"),crs=432
     #plot(r,col=adjustcolor(colo.scale(1:200,pcol$colgrad),0.30),axes=FALSE,legend=FALSE,add=TRUE,maxcell=1000000)
     plotRGB(sat,axes=FALSE)
     if(nrow(xgbif)>0){
-      xxgbif<-st_transform(xgbif,3857)
-      plot(st_geometry(xxgbif),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$gbif,add=TRUE)
+      plot(st_geometry(xgbif),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$gbif,add=TRUE)
+    }
+    if(nrow(xinpn)>0){
+      plot(st_geometry(xinpn),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$inpn,add=TRUE)
     }
     if(nrow(xinat)>0){
-      xxinat<-st_transform(xinat,3857)
-      plot(st_geometry(xxinat),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$gbif,add=TRUE)
-      plot(st_geometry(xxinat),cex=0.25,pch=16,col="black",add=TRUE)
+      plot(st_geometry(xinat),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$inat,add=TRUE)
+      #plot(st_geometry(xxinat),cex=0.25,pch=16,col="black",add=TRUE)
     }
-    legend("topright",inset=c(0.05,0),legend=c("iNat","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=pcol$gbif,bty="n")
-    legend("topright",inset=c(0.05,0),legend=c("iNat","GBIF"),text.col="#fff8dc",pt.cex=0.25,pt.lwd=1.3,pch=16,col=c("black","#FFFFFF00"),pt.bg="#FFFFFF00",bty="n")
+    legend("topright",inset=c(0.05,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=c(pcol$inat,pcol$inpn,pcol$gbif),bty="n")
+    legend("topright",inset=c(0.05,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=c(pcol$inat,pcol$inpn,pcol$gbif),bty="n")
+    #legend("topright",inset=c(0.05,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",pt.cex=0.25,pt.lwd=1.3,pch=16,col=c("black","#FFFFFF00","black"),pt.bg="#FFFFFF00",bty="n")
     dev.off()
     #file.show("C:/Users/God/Downloads/large_map.png") 
     
@@ -1066,7 +1102,7 @@ width: 100%;
 <br>
 <br>
 
-<img style=\"height: 15vmin; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/rungrasslogotext.png\">
+<img style=\"width: 60vw; padding: 0vh; margin: 0vh; border: 0px solid red;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/rungrasslogotext.png\">
 <br>
 <br>
 <br>
