@@ -2,6 +2,8 @@
 
 ## todo
 
+- add auth_token to get own obscured observations
+
 - code_nom for missing taxref
 
 - check all links
@@ -18,11 +20,7 @@
 
 - add recent/better photos
 
-- add links for inat and inpn?
-
 - inat journal post for permission
-
-- id tips with modal
 
 - add alternative species names for gbif occs
 

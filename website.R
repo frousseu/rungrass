@@ -15,8 +15,24 @@ library(RCurl)
 library(future)
 library(future.apply)
 library(data.table)
+library(magick)
 
 source("https://raw.githubusercontent.com/frousseu/FRutils/master/R/colo.scale.R")
+
+borbonicalogo<-image_read("https://www.borbonica.re/img/carousel/carte-run.png") |> 
+  image_trim() |>
+  image_scale("x30") |>
+  image_quantize(50,dither=FALSE)
+image_write(borbonicalogo,"C:/Users/God/Documents/rungrass/images/borbonicalogo.png")
+inpnlogo<-image_read("https://openobs.mnhn.fr/openobs-hub/img/logo_openobs.png") |> 
+  image_trim() |>
+  image_scale("x30") |>
+  image_quantize(50,dither=FALSE)
+image_write(inpnlogo,"C:/Users/God/Documents/rungrass/images/inpnlogo.png")
+
+
+src<-"https://res.cloudinary.com/dphvzalf9/image/upload/"
+#src<-"images/"
 
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
@@ -96,18 +112,19 @@ d$gbif[d$sp=="Cyperus involucratus"]<-paste0("https://www.gbif.org/fr/species/",
 
 ### iNat links ##################################
 
-k<-d$family!="Excluded" & is.na(d$inat)
+k<-d$family!="Excluded" & is.na(d$inat) # removing the inat part allows complete updating in case of taxonomy changes
 if(any(k)){
   sp<-unique(d$sp[k])
-  ids<-sapply(sp,function(i){
+  ids<-rep(NA,length(sp))
+  for(i in sp){
+  #ids<-sapply(sp,function(i){
     print(i)
     x<-fromJSON(paste0("https://api.inaturalist.org/v1/taxa?q=\"",gsub(" ","%20",i),"\""))$results$id[1]
-    if(is.null(x)){
-      NA
-    }else{
-      x  
+    if(!is.null(x)){
+      ids[match(i,sp)]<-x
     }
-  })
+  #})
+  }
   ###merge(,data.frame(sp=sp
 
   d$inatid[k]<-ids[match(d$sp[k],sp)]
@@ -137,11 +154,20 @@ ex<-future_lapply(links,url.exists)
 plan(sequential)
 d$fna<-ifelse(unlist(ex)[match(d$fna,links)],d$fna,NA)
 
+
+### INPN links ##########################################
+
+d$inpn<-ifelse(is.na(d$taxref),NA,paste0("https://openobs.mnhn.fr/redirect/inpn/taxa/",d$taxref,"?departmentInseeId=974&view=map"))
+
+### Statuses ############################################
+d$stat<-substr(d$status,1,2)
+
+
 ### OCCS #######################
 
-inpn_update<-TRUE
-gbif_update<-TRUE
-inat_update<-TRUE
+inpn_update<-FALSE
+gbif_update<-FALSE
+inat_update<-FALSE
 
 if(FALSE){
   
@@ -163,12 +189,7 @@ if(FALSE){
     inpnfiles<-grep(".csv",inpnfiles,value=TRUE)
     inpn<-rbindlist(lapply(inpnfiles,fread,select=1:117,encoding="UTF-8"))
     inpn<-inpn[espece!="",]
-    #rev(sort(table(inpn$espece)))[1:20]
-    inpn<-inpn[!is.na(longitude),]
-    inpn<-inpn[-grep("iNaturalist.org",descriptionJeuDonnees),]
-    inpn<-inpn[-grep("GBIF",descriptionJeuDonnees),]
     inpn[,sp:=espece,]
-
     changes<-list( # the rest is transformed below with the tax code
       c("Cenchrus setiger","Cenchrus setigerus"),
       c("Ceratochloa cathartica","Bromus catharticus"), 
@@ -188,15 +209,39 @@ if(FALSE){
     changes<-as.data.table(do.call("rbind",changes))
     setnames(changes,c("old","new"))
     inpn[changes, sp := new, on = .(sp = old)]
-  
-    table(inpn$sp[!inpn$sp%in%d$sp])
+    
+    ### build status from inpn occs to paste in excel file
+    inpn<-inpn[,status:=statutBiogeoEspeceTaxref]
+    status<-unique(inpn[,.(espece,status)][order(espece),])
+    status<-status[status!="",]
+    changes<-list( # the rest is transformed below with the tax code
+      c("Introduit","Exotique"),
+      c("Introduit envahissant","Exotique"),
+      c("Présent (indigène ou indéterminé)","Indigène"),
+      c("Introduit non établi (dont cultivé / domestique)","Exotique"),
+      c("Endémique","Endémique"),
+      c("Cryptogène","Cryptogène"),
+      c("Subendémique","Indigène")
+    ) 
+    changes<-as.data.table(do.call("rbind",changes))
+    setnames(changes,c("old","new"))
+    status[changes, status := new, on = .(status = old)]
+    #dtemp<-as.data.frame(read_excel("C:/Users/God/Documents/rungrass/grasses.xlsx"))
+    #write(paste(status$status[match(dtemp$sp,status$espece)],collapse="\n"),file="C:/Users/God/Downloads/status.txt") # copy and paste in excel file 
+    
+    
+    #rev(sort(table(inpn$espece)))[1:20]
+    inpn<-inpn[!is.na(longitude),]
+    inpn<-inpn[-grep("iNaturalist.org",descriptionJeuDonnees),]
+    inpn<-inpn[-grep("GBIF",descriptionJeuDonnees),]
+
+    #table(inpn$sp[!inpn$sp%in%d$sp])
   
     inpn[,source:="inpn"]
     inpn[,lon:=longitude]
     inpn[,lat:=latitude]
     inpn[,date:=dateObservation]
     inpn[,observer:=observateur]
-    inpn[,sp:=espece]
     inpn[,dataset:=libelleJeuDonnees]
   
     inpn<-st_as_sf(inpn,coords=c("lon","lat"),crs=4326)
@@ -206,6 +251,11 @@ if(FALSE){
   }else{
     inpn<-st_read("C:/Users/God/Documents/rungrass/inpn.gpkg")
   }
+  
+  
+  #unique(setDT(st_drop_geometry(inpn))[,.(sp,statutBiogeoEspeceTaxref)][order(sp),])
+ 
+  
   #### GBIF occs #######################
   
   # maybe use all suggested species names (e.g. E. tenella not fully covered)
@@ -224,14 +274,22 @@ if(FALSE){
         sps<-c(sp[i],flore[i],index[i],strsplit(other[i],", ")[[1]])
         sps<-unique(sps[!is.na(sps)])
         keys<-sapply(sps,function(j){
-          as.data.frame(name_backbone(name=j, rank='species', kingdom='plants'))$usageKey[1]
+          ### chex here how to find all occs better
+          res<-as.data.frame(name_backbone(name=j, rank="species", kingdom='plants'))
+          if(res$rank%in%c("SPECIES","SUBSPECIES")){
+            res$usageKey[1]
+          }else{
+            NULL
+          }
         })
+        sps<-sps[!sapply(keys,is.null)]  
+        keys<-unlist(keys,use.names=FALSE)
       }else{
         sps<-sp[i]
         keys<-key[i]
       }
       l<-lapply(seq_along(sps),function(k){
-        spoccs<-as.data.table(occ_data(taxonKey=keys[k],limit=2000,hasCoordinate=TRUE,country="RE")$data)
+        spoccs<-as.data.table(occ_search(taxonKey=keys[k],limit=2000,hasCoordinate=TRUE,country="RE")$data)
         if(nrow(spoccs)==0){
           NULL
         }else{
@@ -322,7 +380,6 @@ if(FALSE){
   occs<-occs[notdups,]
   
   
-  
   #st_write(occs,"C:/Users/God/Documents/rungrass/occs.gpkg",append=FALSE)
   #occsold<-st_read("C:/Users/God/Documents/rungrass/occs.gpkg")
   #st_geometry(occsold)<-"geometry"
@@ -378,12 +435,20 @@ if(FALSE){
     colgrad=colo.scale(200,c("lightgoldenrod","seagreen3","forestgreen","darkgreen","darkgreen","saddlebrown","sienna4","brown"))
   )
   
+  inatlogo<-image_read("https://static.inaturalist.org/sites/1-favicon.png?1573071870") |> image_scale("x40")
+  gbiflogo<-image_read("https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg") |> image_scale("x40") |> image_fill("#ffffff00","+39+1",fuzz=40)
+  inpnlogo<-image_read("https://openobs.mnhn.fr/openobs-hub/img/logo_openobs.png") |> image_trim() |> image_scale("x40")
+  #inpnlogo<-image_transparent(inpnlogo,"white")
+  #rev(sort(table(image_raster(inpnlogo)[,3])))[1:10]
+  
   
   ### locs
   mult<-abs(diff(st_bbox(run)[c(1,3)])/diff(st_bbox(run)[c(2,4)]))
   mult<-abs(diff(ext(r2)[c(1,2)])/diff(ext(r2)[c(3,4)]))
   k<-d$family!="Excluded"
   sp<-unique(d$sp[k])#[1:10]
+  sp<-sp[which(!sp%in%inpn$espece)]
+  #sp<-sample(sp,20)
   #sp<-updates
   occs2<-st_transform(occs,3857)
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
@@ -414,12 +479,19 @@ if(FALSE){
       plot(st_geometry(xinat),pch=21,bg=pcol$inat,col=adjustcolor("black",0.7),lwd=1,cex=5,xpd=TRUE,add=TRUE)
       #plot(st_geometry(xinat),pch=16,col="black",cex=0.55,xpd=TRUE,add=TRUE)
     }
-    mtext(side=3,adj=0.99,line=-5,text="En",col=grey(0.85),cex=8,font=1,xpd=TRUE)
+    mtext(side=3,adj=0.99,line=-5,text=d$stat[match(sp[i],d$sp)],col=grey(0.85),cex=8,font=1,xpd=TRUE)
     dev.off()
     im<-image_read(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
-    im<-image_scale(im,"150")
-    im<-image_quantize(im,100,dither=FALSE)
+    im<-image_scale(im,"125")
+    im<-image_fill(im,"#ffffff00","+1+1",fuzz=1)
+    im<-image_fill(im,"#ffffff00","+124+1",fuzz=1)
+    im<-image_fill(im,"#ffffff00","+90+1",fuzz=1)
+    im<-image_fill(im,"#ffffff00","+1+100",fuzz=1)
+    im<-image_fill(im,"#ffffff00","+124+100",fuzz=1)
+    im<-image_modulate(im,brightness=125)
+    im<-image_quantize(im,500,dither=FALSE)
     image_write(im,paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
+    #file.show(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"))
     
     ### large
     png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"),width=5,height=4.5,units="in",res=300)
@@ -437,13 +509,23 @@ if(FALSE){
       plot(st_geometry(xinat),cex=1.0,lwd=1.3,pch=21,col="black",bg=pcol$inat,add=TRUE)
       #plot(st_geometry(xxinat),cex=0.25,pch=16,col="black",add=TRUE)
     }
-    legend("topright",inset=c(0.05,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=c(pcol$inat,pcol$inpn,pcol$gbif),bty="n")
-    legend("topright",inset=c(0.05,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=c(pcol$inat,pcol$inpn,pcol$gbif),bty="n")
+    legend("topright",inset=c(0.09,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=c(pcol$inat,pcol$inpn,pcol$gbif),bty="n")
+    legend("topright",inset=c(0.09,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",cex=1,pt.lwd=1.3,pch=21,col="black",pt.bg=c(pcol$inat,pcol$inpn,pcol$gbif),bty="n")
     #legend("topright",inset=c(0.05,0),legend=c("iNat","INPN","GBIF"),text.col="#fff8dc",pt.cex=0.25,pt.lwd=1.3,pch=16,col=c("black","#FFFFFF00","black"),pt.bg="#FFFFFF00",bty="n")
     dev.off()
     #file.show("C:/Users/God/Downloads/large_map.png") 
+    #im<-image_read(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"))
+    #im<-image_quantize(im,2000,dither=FALSE)
+    #image_write(im,paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"))
     
+
     
+    im<-image_read(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"))
+    im<-image_composite(im,inatlogo,gravity="northwest",offset="+1360+42")
+    im<-image_composite(im,inpnlogo,gravity="northwest",offset="+1360+102")
+    im<-image_composite(im,gbiflogo,gravity="northwest",offset="+1360+161")
+    image_write(im,paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"))
+    #file.show(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),"_large.png"))
     cat("\r",paste(i,length(sp),sep=" / "))
   }
   
@@ -476,8 +558,8 @@ write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=
 
 d$cbnm<-paste0("https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",d$taxref))
 d$borbonica<-paste0("http://atlas.borbonica.re/espece/",d$taxref)
-d$flore<-ifelse(is.na(d$flore),"-",d$flore)
-d$index<-ifelse(is.na(d$index),"-",d$index)
+d$flore<-ifelse(is.na(d$flore),"",d$flore)
+d$index<-ifelse(is.na(d$index),"",d$index)
 d$genus<-sapply(strsplit(d$sp," "),"[",1)
 
 
@@ -1246,7 +1328,11 @@ species_links<-function(x,i){
      </a>")),
     ifelse(any(grep("/NA",x$borbonica[i])),"",
     paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
-       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/borbonicalogo.png\">
+     </a>")),
+    ifelse(any(grep("/NA",x$inpn[i])),"",
+           paste0("<a target=\"_blank\" href=\"",x$inpn[i],"\">
+       <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/inpnlogo.png\">
      </a>")),
      "<a target=\"_blank\" href=\"",x$inat[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
@@ -1302,13 +1388,13 @@ species_header<-function(x,i){
            ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">&#9660</button>&nbsp")),"
        </div>
        <div class=\"inner\">
-       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),".png"),"\" data-src=\"https://res.cloudinary.com/dphvzalf9/image/upload/",paste0(gsub(" ","_",x$sp[i]),"_large.png"),"\" loading=\"lazy\"></span>
+       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"",paste0(src,paste0(gsub(" ","_",x$sp[i]),".png")),"\" data-src=\"",paste0(src,paste0(gsub(" ","_",x$sp[i])),"_large.png"),"\" loading=\"lazy\"></span>
        </div>
      </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p class=\"desc\"><br>",x$id[i],"<br><br></p></div>")),"
      
  "))
 }
-
+#species_header(d,i)
 
 
 species_photo<-function(x,i){
