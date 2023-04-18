@@ -172,8 +172,13 @@ logo<-image_fill(logo,"#ffffff00",paste0("+",w-off,"+",h-off),fuzz=fuzz)
 logo<-image_fill(logo,"#ffffff00",paste0("+",off,"+",h-off),fuzz=fuzz)
 logo<-image_fill(logo,"#ffffff00",paste0("+",w-off,"+",off),fuzz=fuzz)
 image_write(logo,"C:/Users/God/Documents/rungrass/rungrasslogo.png")
-image_write(image_quantize(image_scale(logo,"500"),100),"C:/Users/God//Documents/rungrass/rungrasslogo500.png")
+#logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
+logosmall<-image_quantize(image_scale(logo,"100"),200)
+logosmall<-image_border(logosmall,"#ffffff00","0x6")
+image_write(logosmall,"C:/Users/God//Documents/rungrass/rungrasslogosmall.png")
 file.show("C:/Users/God/Documents/rungrass/rungrasslogo.png")
+
+
 
 #logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
 #logo<-image_motion_blur(logo,radius=5)
