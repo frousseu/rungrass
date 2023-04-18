@@ -123,6 +123,13 @@ b2<-st_buffer(st_centroid(run)+c(+3,+1),360,nQuadSegs=30) #335
 b1<-st_buffer(st_centroid(run)+c(+3,+1),300,nQuadSegs=30)
 b<-st_difference(b2,b1)
 
+b2<-st_buffer(run,dist=13,nQuadSegs=30) #335
+b1<-st_buffer(run,dist=5,nQuadSegs=30)
+b<-st_difference(b2,b1)
+plot(run)
+plot(b,col="green",add=TRUE)
+
+
 r<-crop(r,vect(run))
 r<-mask(r,vect(run))
 volcano<-as.polygons(r) |> st_as_sf()
@@ -139,8 +146,8 @@ cols<-c("#43cd80","#fff8dc")
 #cols<-c("#43cd80","#fcfc16ff")
 png("C:/Users/God/Documents/rungrass/rungrasslogo.png",width=5,height=5,units="in",res=300)
 par(bg="#111111")
-#plot(st_geometry(b),col=cols[1],border=NA,axes=FALSE)
-plot(st_geometry(run),col=cols[1],border=NA,axes=FALSE)
+plot(st_geometry(b),col=cols[1],border=NA,axes=FALSE)
+plot(st_geometry(run),col=cols[1],border=NA,axes=FALSE,add=TRUE)
 plot(rest,col=cols[2],add=TRUE,border=FALSE)
 plot(volcano,col=cols[1],add=TRUE,border=FALSE)
 dev.off()
