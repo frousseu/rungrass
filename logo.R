@@ -6,6 +6,7 @@ library(rmapshaper)
 library(FRutils)
 library(webshot2)
 library(magick)
+library(smoothr)
 
 
 #########################################
@@ -36,7 +37,7 @@ spikes1<-image_read("C:/Users/God/Documents/rungrass/spikes.png") # edit spike h
 #col<-image_read("C:/Users/God/Downloads/cencaf.jpg") |> image_raster()
 #head(rev(sort(table(col[,3])))) #adjustcolor("#4d1d2bff",0.8)
 
-col<-colo.scale(1:100,c("red4","purple4"))[20]
+col<-colo.scale(1:100,c("red4","purple4"))[30]
 spike<-image_trim(image_read("C:/Users/God/Documents/rungrass/spikes.png"))
 spike<-image_quantize(spike,2) |> image_split()
 spike<-image_trim(spike[1])
@@ -93,6 +94,7 @@ r<-r[[2]]
 run<-st_read("C:/Users/God/Downloads","Reunion_2015_region")
 run<-st_buffer(st_geometry(run),50)
 run<-ms_simplify(run,keep=0.01)
+run<-smooth(run,method="ksmooth",smoothness=2)
 
 xs<-st_coordinates(st_centroid(run))[,1]-600
 ys<-st_coordinates(st_centroid(run))[,2]-400
@@ -137,35 +139,40 @@ cols<-c("#43cd80","#fff8dc")
 #cols<-c("#43cd80","#fcfc16ff")
 png("C:/Users/God/Documents/rungrass/rungrasslogo.png",width=5,height=5,units="in",res=300)
 par(bg="#111111")
-plot(st_geometry(b),col=cols[1],border=NA,axes=FALSE)
-#plot(r,mar=c(0,0,0,0),col=cols,legend=FALSE,axes=FALSE,add=TRUE)
+#plot(st_geometry(b),col=cols[1],border=NA,axes=FALSE)
+plot(st_geometry(run),col=cols[1],border=NA,axes=FALSE)
 plot(rest,col=cols[2],add=TRUE,border=FALSE)
 plot(volcano,col=cols[1],add=TRUE,border=FALSE)
 dev.off()
 logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png") |> image_trim()
 grass<-image_fill(tuft,"#ffffff00","+1+1") |> image_trim()
 grass<-image_fill(grass,"#ffffff00","+1100+1")
-grass<-image_scale(grass,"700")
+grass<-image_scale(grass,"1200")
+grass<-image_trim(grass)
 cov<-image_quantize(logo,3) |> image_split()
-logo<-image_composite(logo,grass,offset="+63+135")
+#logo2<-image_composite(logo,grass,gravity="northeast",offset="+0+0",operator="atop")
+logo<-image_composite(logo,image_crop(grass,"2000x2000+125+60",gravity="northwest"),gravity="northwest",offset="+0+0",operator="over")
+#plot(logo)
 logo<-image_composite(logo,cov[1])
 logo<-image_composite(logo,cov[2])
-logo<-image_scale(logo,"900")
+logo<-image_scale(logo,"900") #900
 h<-image_info(logo)$height
 w<-image_info(logo)$width
-logo<-image_fill(logo,"#ffffff00","+1+1")
-logo<-image_fill(logo,"#ffffff00",paste0("+",h-1,"+",w-1))
-logo<-image_fill(logo,"#ffffff00",paste0("+",1,"+",w-1))
-logo<-image_fill(logo,"#ffffff00",paste0("+",h-1,"+",1))
+fuzz<-20
+off<-5
+logo<-image_fill(logo,"#ffffff00",paste0("+",off,"+",off),fuzz=fuzz)
+logo<-image_fill(logo,"#ffffff00",paste0("+",w-off,"+",h-off),fuzz=fuzz)
+logo<-image_fill(logo,"#ffffff00",paste0("+",off,"+",h-off),fuzz=fuzz)
+logo<-image_fill(logo,"#ffffff00",paste0("+",w-off,"+",off),fuzz=fuzz)
 image_write(logo,"C:/Users/God/Documents/rungrass/rungrasslogo.png")
 image_write(image_quantize(image_scale(logo,"500"),100),"C:/Users/God//Documents/rungrass/rungrasslogo500.png")
 file.show("C:/Users/God/Documents/rungrass/rungrasslogo.png")
 
-logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
+#logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
 #logo<-image_motion_blur(logo,radius=5)
-logo<-image_noise(logo)
+#logo<-image_noise(logo)
 #logo<-image_emboss(logo)
-plot(logo)
+#plot(logo)
 
 
 #############################################################
@@ -209,7 +216,7 @@ p {
 ")
 
 cat("
-  <p>RUNGRASS</p>
+  <p><span style=\"color: #fff8dc\">RUN</span>GRASS</p>
   </body>
   </html>
 ")
@@ -226,17 +233,19 @@ webshot("C:/Users/God/Documents/rungrass/rungrasslogo.html","C:/Users/God/Docume
 logotext<-image_read("C:/Users/God/Documents/rungrass/rungrasslogotext.png") |> image_trim()
 #logotext<-image_border(logotext,"#111111","500")
 logo<-image_read("C:/Users/God/Documents/rungrass/rungrasslogo.png")
-logo<-image_scale(logo,paste0(image_info(logotext)$height))
+logo<-image_scale(logo,paste0("x",image_info(logotext)$height))
 logo<-image_background(logo,"#111111")
 logo<-image_border(logo,"#111111","20")
-logotext<-image_append(c(logotext,logo)) |> image_trim()
+logotext<-image_append(c(logo,logotext)) |> image_trim()
 logotext<-image_border(logotext,"#111111","10x10")
 image_write(logotext,"C:/Users/God/Documents/rungrass/rungrasslogotext.png",depth=16)
 logotext<-image_read("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
 logotext<-image_fill(logotext,"#11111100","+1+1",fuzz=10)
-logotext<-image_fill(logotext,"#11111100","+60+100",fuzz=10)
-logotext<-image_fill(logotext,"#11111100","+1030+100",fuzz=10)
-logotext<-image_fill(logotext,"#11111100","+1210+100",fuzz=10)
+logotext<-image_fill(logotext,"#11111100","+400+100",fuzz=10)
+logotext<-image_fill(logotext,"#11111100","+1300+120",fuzz=10)
+logotext<-image_fill(logotext,"#11111100","+1550+120",fuzz=10)
+#logotext<-image_annotate(logotext,"#",location="+1300+100")
+#logotext<-image_annotate(logotext,"#",location="+1550+100")
 image_write(logotext,"C:/Users/God/Documents/rungrass/rungrasslogotext.png",depth=16)
 file.show("C:/Users/God/Documents/rungrass/rungrasslogotext.png")
 #logotrans<-image_background(logotext,"none")
