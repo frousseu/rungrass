@@ -16,26 +16,62 @@ library(future)
 library(future.apply)
 library(data.table)
 library(magick)
+library(httr)
 
 source("https://raw.githubusercontent.com/frousseu/FRutils/master/R/colo.scale.R")
 
-borbonicalogo<-image_read("https://www.borbonica.re/img/carousel/carte-run.png") |> 
-  image_trim() |>
-  image_scale("x30") |>
-  image_quantize(50,dither=FALSE)
-image_write(borbonicalogo,"C:/Users/God/Documents/rungrass/images/borbonicalogo.png")
-inpnlogo<-image_read("https://openobs.mnhn.fr/openobs-hub/img/logo_openobs.png") |> 
-  image_trim() |>
-  image_scale("x30") |>
-  image_quantize(50,dither=FALSE)
-image_write(inpnlogo,"C:/Users/God/Documents/rungrass/images/inpnlogo.png")
+### borbonica and inpn logo
+#borbonicalogo<-image_read("https://www.borbonica.re/img/carousel/carte-run.png") |> 
+#  image_trim() |>
+#  image_scale("x30") |>
+#  image_quantize(50,dither=FALSE)
+#image_write(borbonicalogo,"C:/Users/God/Documents/rungrass/images/borbonicalogo.png")
+#inpnlogo<-image_read("https://openobs.mnhn.fr/openobs-hub/img/logo_openobs.png") |> 
+#  image_trim() |>
+#  image_scale("x30") |>
+#  image_quantize(50,dither=FALSE)
+#image_write(inpnlogo,"C:/Users/God/Documents/rungrass/images/inpnlogo.png")
 
 
-src<-"https://res.cloudinary.com/dphvzalf9/image/upload/"
+# https://www.inaturalist.org/pages/api+recommended+practices
+# x<-GET("https://www.inaturalist.org/users/api_token")
+# 24 h
+# api_token<-""
+
+
+
+#src<-"https://res.cloudinary.com/dphvzalf9/image/upload/"
+src<-"https://hebergix.net/cdn/fr/"
 #src<-"images/"
 
 #x<-fromJSON("https://api.inaturalist.org/v1/observations/90513306")
 #x$results$observation_photos[[1]]$photo$attribution
+
+# finds all possible sp names based on sp in d
+allspnames<-function(sp){
+  m<-match(sp,spnames$sp)
+  if(is.na(m)){
+    g<-unique(unlist(lapply(c("sp","flore","index","other"),function(i){
+      grep(sp,spnames[,i,drop=TRUE])  
+    })))
+    if(any(g)){
+      if(length(g)>1){
+        print(g)
+        stop(paste("Multiple matches for",sp))
+      }else{
+        m<-g
+      }
+    }else{
+      stop(paste("No matches for",sp)) 
+    }
+  }
+  sps<-c(spnames$sp[m],spnames$flore[m],spnames$index[m],strsplit(spnames$other[m],", ")[[1]])
+  unique(sps[!is.na(sps)]) 
+}
+
+#allspnames("Avenella flexuosa")
+
+
 
 ### Data ########################################
 
@@ -49,6 +85,7 @@ d<-merge(d,dcsv[,c("sp","photo","attribution","powo","gbif","inatid","inat")],al
 d<-d[order(d$sp,d$rank),]
 
 d<-unique(d)
+spnames<-unique(d[,c("sp","flore","index","other")])
 
 #write.table(d[,1:9],"C:/Users/God/Documents/reunion_graminoids/grasses.csv",row.names=FALSE,sep=";",na="")
 
@@ -157,7 +194,7 @@ d$fna<-ifelse(unlist(ex)[match(d$fna,links)],d$fna,NA)
 
 ### INPN links ##########################################
 
-d$inpn<-ifelse(is.na(d$taxref),NA,paste0("https://openobs.mnhn.fr/redirect/inpn/taxa/",d$taxref,"?departmentInseeId=974&view=map"))
+d$inpn<-ifelse(is.na(d$taxref) | d$taxref=="",NA,paste0("https://openobs.mnhn.fr/redirect/inpn/taxa/",d$taxref,"?departmentInseeId=974&view=map"))
 
 ### Statuses ############################################
 d$stat<-substr(d$status,1,2)
@@ -271,8 +308,9 @@ if(FALSE){
     #i<-which(sp=="Aristida setacea")
     occs<-foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
       if(!is.na(other[i])){
-        sps<-c(sp[i],flore[i],index[i],strsplit(other[i],", ")[[1]])
-        sps<-unique(sps[!is.na(sps)])
+        #sps<-c(sp[i],flore[i],index[i],strsplit(other[i],", ")[[1]])
+        #sps<-unique(sps[!is.na(sps)])
+        sps<-allspnames(sp[i])
         keys<-sapply(sps,function(j){
           ### chex here how to find all occs better
           res<-as.data.frame(name_backbone(name=j, rank="species", kingdom='plants'))
@@ -452,7 +490,15 @@ if(FALSE){
   #sp<-updates
   occs2<-st_transform(occs,3857)
   foreach(i=seq_along(sp),.packages=c("rgbif")) %do% {
-    x<-occs2[which(occs2$sp==sp[i]),]
+    # find all names mathcing a species
+    #m<-match(sp[i],d$sp)
+    #sps<-c(d$sp[m],d$flore[m],d$index[m],strsplit(d$other[m],", ")[[1]])
+    #sps<-unique(sps[!is.na(sps)])
+    
+    sps<-allspnames(sp[i])
+    
+    #x<-occs2[which(occs2$sp%in%sp[i]),]
+    x<-occs2[occs2$sp%in%sps,]
     
     ### small
     png(paste0(file.path("C:/Users/God/Documents/rungrass/images",gsub(" ","_",sp[i])),".png"),height=500,width=500*mult,units="px")
@@ -556,8 +602,8 @@ write.table(d,"C:/Users/God/Documents/rungrass/grasses.csv",row.names=FALSE,sep=
 
 ### Data for website #################
 
-d$cbnm<-paste0("https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",d$taxref))
-d$borbonica<-paste0("http://atlas.borbonica.re/espece/",d$taxref)
+d$cbnm<-ifelse(!is.na(d$codenom),paste0("https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_nom=",d$codenom)),ifelse(is.na(d$taxref),NA,paste0("https://mascarine.cbnm.org/index.php/flore/index-de-la-flore/nom?",paste0("code_taxref=",d$taxref))))
+d$borbonica<-ifelse(d$taxref!="",paste0("http://atlas.borbonica.re/espece/",d$taxref),NA)
 d$flore<-ifelse(is.na(d$flore),"",d$flore)
 d$index<-ifelse(is.na(d$index),"",d$index)
 d$genus<-sapply(strsplit(d$sp," "),"[",1)
@@ -612,8 +658,8 @@ cat(paste0("
   <title>
       RUNGRASS Poacées, cypéracées et juncacées de la Réunion
   </title>
-  <link rel='icon' type='image/png' href='rungrasslogo500.png?v=2'/>
-  <link rel='shortcut icon' type='image/png' href='rungrasslogo500.png?v=2'/>
+  <link rel='icon' type='image/png' href='images/rungrasslogosmall.png?v=2'/>
+  <link rel='shortcut icon' type='image/png' href='images/rungrasslogosmall.png?v=2'/>
   <meta name=\"keywords\" content=\"Réunion, poacées, grass, grasses, poaceae, sedge, sedges, cypéracées, cyperaceae, cyperus, rush, rushes, juncacées, juncaceae, botanique, flore, herbes, herb, herbe, graminées, carex\">
   <style>
 
@@ -1322,15 +1368,15 @@ Site australien sur les poacées très utile pour l'identification lorsque les e
 
 species_links<-function(x,i){
   res<-paste0(
-    ifelse(any(grep("=NA",x$cbnm[i])),"",
+    ifelse(is.na(x$cbnm[i]),"",
     paste0("<a target=\"_blank\" href=\"",x$cbnm[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
      </a>")),
-    ifelse(any(grep("/NA",x$borbonica[i])),"",
+    ifelse(is.na(x$borbonica[i]),"",
     paste0("<a target=\"_blank\" href=\"",x$borbonica[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/borbonicalogo.png\">
      </a>")),
-    ifelse(any(grep("/NA",x$inpn[i])),"",
+    ifelse(is.na(x$inpn[i]),"",
            paste0("<a target=\"_blank\" href=\"",x$inpn[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/inpnlogo.png\">
      </a>")),
@@ -1353,7 +1399,7 @@ species_links<-function(x,i){
      paste0("<a target=\"_blank\" href=\"",x$fna[i],"\">
        <img class=\"imglink\" style=\"height: 3vmin; padding: 0vh;\" src=\"images/fna.jpg\">
      </a>")),"
-     </a>&nbsp;&nbsp;"
+     </a>&nbsp;"
   )
   res
 }
@@ -1376,6 +1422,9 @@ uncertain<-function(x){
   if(x=="Avenella flexuosa"){return("Avenella (flexuosa ?)")}
   if(x=="Urochloa brizantha"){return("Urochloa (brizantha ?)")}
   if(x=="Aristida congesta congesta"){return("Aristida (congesta congesta ?)")}
+  if(x=="Aristida ramosa"){return("Aristida (ramosa ?)")}
+  if(x=="Chloris virgata"){return("Chloris (virgata ?)")}
+  if(x=="Hordeum murinum"){return("Hordeum (murinum ?)")}
   x
 }
 
@@ -1385,10 +1434,10 @@ species_header<-function(x,i){
     "<div id=\"",gsub(" ","_",x$sp[i]),"\" class=\"headersp\">
        <div class=\"inner\">
            <span class=\"p2\">",uncertain(x$sp[i]),"</span>"
-           ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">&#9660</button>&nbsp")),"
+           ,ifelse(is.na(x$id[i]),"",paste0("&nbsp&nbsp&nbsp<button class=\"idbutton\" onclick=\"showID('",paste0(x$sp[i],"ID"),"')\" data-id=\"",x$id[i],"\">&#9660</button>&nbsp")),"
        </div>
        <div class=\"inner\">
-       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"&nbsp<img class=\"imgmap\" src=\"",paste0(src,paste0(gsub(" ","_",x$sp[i]),".png")),"\" data-src=\"",paste0(src,paste0(gsub(" ","_",x$sp[i])),"_large.png"),"\" loading=\"lazy\"></span>
+       <span class=\"flore\">",paste0(gsub(" ","&nbsp",x$flore[i]),"&#32&#32&#32",gsub(" ","&nbsp",x$index[i]),"&#32&#32"),species_links(x,i),x$family[i],"<img class=\"imgmap\" src=\"",paste0(src,paste0(gsub(" ","_",x$sp[i]),".png")),"\" data-src=\"",paste0(src,paste0(gsub(" ","_",x$sp[i])),"_large.png"),"\" loading=\"lazy\"></span>
        </div>
      </div>",ifelse(is.na(x$id[i]),"",paste0("<div class=\"ID\" id=\"",paste0(x$sp[i],"ID"),"\"><p class=\"desc\"><br>",x$id[i],"<br><br></p></div>")),"
      
