@@ -1197,6 +1197,27 @@ width: 100%;
 }
 
 
+table{
+  width: 100%;
+  border: 0px solid #FFF;
+  text-align: left;
+  vertical-align: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  border-spacing: 2em;
+}
+th.logo{
+  width: 12%;
+  text-align: center;
+}
+th.text{
+  width: 85%; 
+  text-align: left;
+}
+
+
+
+
 </style>
 </head>
 <a id=\"top\"></a>  
@@ -1234,20 +1255,23 @@ width: 100%;
 <br>
 <br>
 <br>
-<p class=\"desc\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon <a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">l'Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a>. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin des sections sur chaque espèce. </p><br>
+<br>
+<br>
+<p class=\"desc\">Cette page est un guide photographique des poacées (graminées), cypéracées et juncacées de la Réunion. La liste des espèces présentées est basée sur la liste des espèces reconnues comme étant présentes à la Réunion selon l'<a href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\" target=\"_blank\">Index taxonomique de la flore vasculaire de La Réunion</a> du <a href=\"http://www.cbnm.org/\" target=\"_blank\">Conservatoire National Botanique Mascarin (CBN - CPIE Mascarin)</a> et sur de nouvelles observations réalisées depuis la dernière parution de l'index. Plusieurs espèces n'ont pas été retenues, car leurs mentions résultent possiblement d'erreurs d'identification, d'étiquetages ou autres. La liste des espèces qui n'ont pas été retenues est présentée à la toute fin des sections sur chaque espèce. </p><br>
   
-<p class=\"desc\">La plupart des photos proviennent d'observations déposées sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La plupart des photos présentées sont sous une license <a href=\"https://creativecommons.org/about/cclicenses/\" target=\"_blank\">Creative Commons (CC)</a> permettant leur utilisation à des fins non-commerciales, mais vérifiez la license et l'auteur de chaque photo en y passant votre curseur ou en cliquant sur la photo et en consultant l'adresse URL au bas de chaque agrandissement. </p><br>
+<p class=\"desc\">La plupart des photos proviennent d'observations déposées sur la plateforme <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> ou de spécimens d'herbiers déposés au <a href=\"https://science.mnhn.fr/institution/mnhn/item/search\" target=\"_blank\">Muséum National d'Histoire Naturelle</a>. La majorité des photos proviennent de mes observations effectuées à la Réunion, mais plusieurs photos proviennent également d'observations déposées sur iNaturalist qui n'ont pas nécessairement été effectuées à la Réunion. Dans la plupart des cas, les photos ne sont pas libres de droits et leur utilisation doit respecter la license qui lui est associée. Un lien au bas de chaque photo permet de consulter l'observation et la license associée.</p><br>
 
-<p class=\"desc\">Pour plusieurs espèces, notamment pour quelques espèces endémiques, rares ou difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a> et de me contacter. Finalement, merci de me faire signe si vous trouvez des erreurs sur le site ou pour toutes questions, commentaires ou suggestions. L'identification pour la plupart des photos n'a pas été validée par des experts et je suis moi-même en apprentissage de ces espèces. Je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Pour me contacter: francoisrousseu at hotmail com</p><br>
+<p class=\"desc\">Pour plusieurs espèces, notamment pour quelques espèces rares ou plus difficiles à identifier, seules des photos de spécimens d'herbier sont disponibles. Si vous possédez des photos pour ces espèces et si vous souhaitez contribuer à ce site, merci de me contacter ou de déposer vos photos sous forme d'observations sur <a href=\"https://www.inaturalist.org/\" target=\"_blank\">iNaturalist</a>. Pour la plupart des espèces, l'identification n'a pas été validée par des experts et je n'ai encore jamais observé plusieurs espèces présentées sur ce site. Il convient donc de rester très prudent lors de l'utilisation des images présentées ici à des fins d'identification. Il est fort probable que des erreurs sur l'identification s'y glissent. Dans bien des cas, certaines espèces ne seront pas identifiables par comparaison à partir des photos présentées ici et il faudra se référer à des clés d'identification comme celle de la <a href=\"https://www.editions.ird.fr/produit/471/9782709924535/flore-des-mascareignes-la-reunion-maurice-rodrigues\" target=\"_blank\">Flore des Mascareignes</a> pour pouvoir identifier les spécimens. Il faut également toujours considérer la possibilité qu'il s'agisse d'une nouvelle espèce qui n'a pas encore été observée à la Réunion et qui n'est donc pas rapportée sur ce site. Il existe assurément plusieurs dizaines d'espèces présentes sur l'île qui n'ont pas encore été rapportées. Finalement, merci de me faire signe si vous trouvez une nouvelle espèce, des erreurs sur le site ou pour toutes questions, commentaires ou suggestions (francoisrousseu at hotmail com ou <a href=\"https://www.inaturalist.org/people/frousseu\" target=\"_blank\">frousseu</a> sur iNaturalist). Il est également possible de contribuer par GitHub où le site et le code sont hébergés <a href=\"https://github.com/frousseu/rungrass\" target=\"_blank\">https://github.com/frousseu/rungrass</a>.</p><br><br>
 
-<h2>Identification&#8628</h2><br><br>
+<br>
+<h2>Identification&nbsp&nbsp&#9660</h2><br><br>
 
 <p class=\"desc\">
-Pour quelques espèces, les traits distinctifs et l'aspect général de la plante sont décrits set des trucs sont donnés pour distinguer des espèces semblables pouvant être confondues avec l'espèce en question.  Ces descriptions sont données à titre indicatif seulement et on pour but de faciliter l'identification et la reconnaissance des différentes espèces et non de fournir une description exhaustive. Les descriptions sont majoritairement basées sur mes observations personnelles et elles sont parfois fortement inspirées des descriptions et des clés d'identification fournies dans la Flore des Mascareignes ainsi que dans d'autres ouvrages comme AusGrass2 (voir plus bas), le guide <i>Identification Guide to southern African Grass</i>(Fish, Mashau, Moeaha et Nembudani, 2015) ou Graminées des pâturages et des cultures à Madagascar (Bosser, 1969). Pour beaucoup d'espèces, mon expérience est encore beaucoup trop limitée (et souvent inexistante!) pour fournir une description.
+Pour quelques espèces, les traits distinctifs et l'aspect général de la plante sont décrits et des trucs sont donnés pour distinguer des espèces semblables pouvant être confondues avec l'espèce en question.  Ces descriptions sont données à titre indicatif seulement et on pour but de faciliter l'identification et la reconnaissance des différentes espèces sur le terrain et non de fournir une description exhaustive. Les descriptions sont majoritairement basées sur mes observations personnelles et elles sont parfois fortement inspirées des descriptions et des clés d'identification fournies dans la Flore des Mascareignes ainsi que d'autres ouvrages comme <a href=\"https://ausgrass2.myspecies.info\" target=\"_blank\">AusGrass2</a>, <a href=\"https://floranorthamerica.org\" target=\"_blank\">FNA</a>, <a href=\"https://powo.science.kew.org\" target=\"_blank\">POWO</a>, le guide <a href=\"http://opus.sanbi.org/handle/20.500.12143/5602\" target=\"_blank\"><i>Identification Guide to southern African Grass</i></a> (Fish, Mashau, Moeaha et Nembudani, 2015) ou Graminées des pâturages et des cultures à Madagascar (Bosser, 1969). Pour certaines espèces, mon expérience est trop limitée (et souvent inexistante!) pour fournir une description.
 </p><br><br>
 
-
-<h2>Occurrences<img style=\"height: 8vmin; padding: 0px;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/Cyperus_javanicus.png\"></h2><br><br>
+<br>
+<h2>Occurrences<img style=\"height: 10vmin; padding: 0px;\" src=\"https://res.cloudinary.com/dphvzalf9/image/upload/Cyperus_javanicus.png\"></h2><br><br>
 
 <p class=\"desc\">
 L'objectif premier des cartes de distribution présentées ici est de donner une idée approximative de l'abondance et de la répartition des espèces à travers l'île. En aucun cas, ces occurrences doivent être interprétées comme étant exhaustives, précises ou représentatives de la répartition exacte des espèces. Lors de l'interprétation de ces cartes, il faut garder en tête que:
@@ -1259,74 +1283,104 @@ L'objectif premier des cartes de distribution présentées ici est de donner une
 &nbsp&nbsp&nbsp- certaines espèces plus difficiles à identifier, à trouver ou d'intérêt moindre peuvent être sous-rapportées<br>
 &nbsp&nbsp&nbsp- l'effort variable des observateurs ou d'échantillonnage d'un endroit à l'autre de l'île est susceptible d'affecter la répartition apparente<br>
 &nbsp&nbsp&nbsp- pour diverses raisons, les mentions de certaines espèces peuvent ne pas avoir été intégrées aux base de donnnées utilisées pour récolter les occurrences<br>
+&nbsp&nbsp&nbsp- des problèmes taxonomiques peuvent être à l'origine d'absences ou de surplus d'occurrences<br>
 &nbsp&nbsp&nbsp- etc.<br>
 <br>
-Malgré ces précautions à prendre, je crois que ces cartes demeurent généralement utiles pour se faire une idée de la répartition des différentes espèces. Par exemple, Holcus lanatus et Nastus borbonicus sont deux espèces plutôt abondantes dans les hauts. Scleria sieberi est davantage retrouvée dans les forêts humides de l'est de l'île, alors que Heteropogon contortus est davantage retrouvé dans les milieux secs de l'ouest. En général, plus il y a d'occurrences, plus l'espèce est facile à observer. Plusieurs espèces n'ont aucune mention ce qui peut indiquer qu'elles sont rares, localisées, difficiles à identifier, négligées, historiquement présentes sur l'île ou tout simplement qu'aucune observation n'a été intégrée à iNaturalist ou a GBIF. 
+Malgré ces multiples précautions à prendre, ces cartes demeurent généralement utiles pour se faire une idée rapide de la répartition des différentes espèces. Par exemple, Holcus lanatus et Nastus borbonicus sont deux espèces plutôt abondantes dans les hauts. Scleria sieberi est davantage retrouvée dans les forêts humides de l'est de l'île, alors que Heteropogon contortus est davantage retrouvé dans les milieux secs de l'ouest. En général, plus il y a d'occurrences, plus l'espèce est facile à observer. Plusieurs espèces n'ont aucune mention ce qui peut indiquer qu'elles sont rares, localisées, difficiles à identifier, négligées, historiquement présentes sur l'île ou tout simplement qu'aucune observation n'a été intégrée dans les bases de données utilisées. 
 <br><br>
-Les données d'occurences illustrées sur ces cartes proviennent de GBIF (voir plus bas) et des observations de niveau recherche effectuées sur iNaturalist. J'y ai également intégré mes observations personnelles déposées sur iNaturalist. À noter qu'un certaine portion des observations effectuées avec <a target=\"_blank\" href=\"https://plantnet.org/\">PlantNet</a> se<a target=\"_blank\" href=\"https://plantnet.org/2020/08/06/vos-donnees-plntnet-integrees-gbif/\"> retrouveront également sur GBIF</a> et seront donc représentées ici. <a target=\"_blank\" href=\"https://www.gbif.org/dataset/14d5676a-2c54-4f94-9023-1e8dcd822aa0\">Les observations dont l'identification est uniquement basée sur l'algorithme de reconnaissance automatisée</a> ont toutefois été éliminées.
+Les données d'occurrences illustrées sur ces cartes proviennent de GBIF, OpenObs et des observations sur iNaturalist de niveau recherche ou identifiées par moi.  Plusieurs observations sur OpenObs proviennent de GBIF. Dans ces cas, les observations sur OpenObs marquées comme provenant de GBIF sont illustrées comme provenant de GBIF. Plusieurs observations sur iNaturalist se retrouvent à la fois dans GBIF et dans OpenObs. Dans ces cas, toutes les observations qui proviennent originellement d'iNaturalist sont illustrées comme venant de cette plateforme. À noter qu'un certaine portion des observations effectuées avec <a target=\"_blank\" href=\"https://plantnet.org/\">PlantNet</a> se<a target=\"_blank\" href=\"https://plantnet.org/2020/08/06/vos-donnees-plntnet-integrees-gbif/\"> retrouveront également sur GBIF</a> et seront donc représentées ici. <a target=\"_blank\" href=\"https://www.gbif.org/dataset/14d5676a-2c54-4f94-9023-1e8dcd822aa0\">Les observations dont l'identification est uniquement basée sur l'algorithme de reconnaissance automatisée</a> ont toutefois été éliminées.
+<!-- <br><br>
+Pour beaucoup d'espèces, plusieurs noms ont été ou sont couramment utilisés ce qui peut complexifier les requêtes cherchant à récolter l'ensemble des mentions pour une espèce donnée. Voir la section identification pour chaque espèce pour la liste des noms utilisés pour récolter les occurrences de l'espèce. -->
 <br><br>
-Pour beaucoup d'espèces, plusieurs noms ont été ou sont couramment utilisés ce qui peut complexifier les requêtes cherchant à récolter l'ensemble des mentions pour une espèce donnée. Voir la section identification pour chaque espèce pour la liste des noms utilisés pour récolter les occurrences de l'espèce.
+Finalement, le statut des différentes espèces à la Réunion est indiqué sur chaque carte:<br><br>
+&nbsp&nbsp&nbsp- <b>En</b>: Endémique de la Réunion ou des Mascareignes<br>
+&nbsp&nbsp&nbsp- <b>In</b>: Indigène<br>
+&nbsp&nbsp&nbsp- <b>Cr</b>: Cryptogène<br>
+&nbsp&nbsp&nbsp- <b>Ex</b>: Exotique<br>
 </p><br><br>
 
+<br>
 <h2>Liens externes</h2><br><br>
 
-<a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">
+<table style=\"width:100%\">
+  <tr>
+    <th class=\"logo\"><a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"https://mascarine.cbnm.org/templates/favourite/favicon.ico\">
-</a>
-<p class=\"desc\">
+</a></th>
+    <th><p class=\"desc\">
 <a target=\"_blank\" href=\"https://mascarine.cbnm.org/index.php/flore/index-de-la-flore\">L'Index taxonomique de la flore vasculaire de La Réunion</a> produit par le CBN-CPIE Mascarin contient plusieurs informations sur les espèces présentées ici et a permis détablir la liste des espèces présentes sur l'île. Il contient notamment le statut de chaque espèce sur l'île (endémique, indigène, exotique, envahissante, cryptogène, etc.), les noms vernaculaires et les noms locaux, etc. La section PLUS D'INFOS est à consulter pour l'historique et le niveau de connaissance de chaque espèce sur l'ile.
-</p><br><br>
-
-<a target=\"_blank\" href=\"http://atlas.borbonica.re\">
+  </tr>
+    <tr>
+    <th class=\"logo\"><a target=\"_blank\" href=\"http://atlas.borbonica.re\">
   <img style=\"height: 8vmin; padding: 0vmin;\" src=\"https://www.borbonica.re/img/carousel/carte-run.png\">
-</a>
-<p class=\"desc\">
+</a></th>
+    <th><p class=\"desc\">
 <a href=\"http://atlas.borbonica.re\" target=\"_blank\">Borbonica</a> est le portail d'accès aux données sur la faune et la flore du SINP à La Réunion (Système d'Information de l'iNventaire du Patrimoine naturel de La Réunion (SINP 974)) . Il est administré par la DEAL et le Parc national de La Réunion. L'atlas présente notamment des synthèses par espèce décrivant les occurrences, les habitats, la phénologie, la synonymie, etc. Les liens pour chaque espèce renvoient vers ces fiches lorsque celles-ci sont disponibles. Souvent, les occurrences retrouvées sur Borbonica sont plus complètes que les occurrences illustrées ici, car les données présentées par Borbonica sont moins ouvertement accessibles que les données disponibles sur iNaturalist ou GBIF.
-</p><br><br>
-
-<a target=\"_blank\" href=\"https://www.inaturalist.org\">
+</p></th>
+  </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://openobs.mnhn.fr\">
+  <img style=\"height: 5vmin; padding: 0px;\" src=\"images/inpnlogo.png\">
+</a></th>
+      <th><p class=\"desc\">
+<a href=\"https://openobs.mnhn.fr\" target=\"_blank\">OpenObs</a> est le portail français d'accès
+aux données d'observation sur les espèces.
+</p></th>
+    </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://www.inaturalist.org\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"https://static.inaturalist.org/sites/1-favicon.png?1573071870\"> 
-</a>
-<p class=\"desc\">
-<a href=\"https://www.inaturalist.org\">iNaturalist</a> est une plateforme et une application permettant d'enregistrer et de partager des observations du vivant qui seront soumises à la communauté pour l'identification. Il s'agit probablement de la plus importante plateforme de science participative pour l'enregistrement d'observations opportunistes du vivant. Le lien présenté pour chaque espèce renvoie vers l'ensemble des observations de l'espèce enregistrées sur cette plateforme pour la Réunion. À noter que toutes les observations faites et déposées sur iNaturalist seront éventuellement intégrées à ce site. Dans bien des cas, les espèces n'ont pas encore d'observations sur iNaturalist. 
-</p><br><br>
-
-<a target=\"_blank\" href=\"https://www.gbif.org/fr/\">
+</a></th>
+      <th><p class=\"desc\">
+<a href=\"https://www.inaturalist.org\">iNaturalist</a> est une plateforme et une application permettant d'enregistrer et de partager des observations du vivant qui seront soumises à la communauté pour l'identification. Il s'agit probablement de la plus importante plateforme de science participative pour l'enregistrement d'observations opportunistes du vivant. Le lien présenté pour chaque espèce renvoie vers l'ensemble des observations de l'espèce enregistrées sur cette plateforme pour la Réunion. À noter que toutes les observations faites et déposées sur iNaturalist seront éventuellement intégrées à ce site. Dans bien des cas, les espèces n'ont pas encore d'observations sur iNaturalist.
+</p></th>
+    </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://www.gbif.org/fr/\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"https://images.ctfassets.net/uo17ejk9rkwj/5NcJCYj87sT16tJJlmEuWZ/85058d511b3906fbbb199be27b2d1367/GBIF-2015-mark.svg\"> 
-</a>
-<p class=\"desc\">
+</a></th>
+      <th><p class=\"desc\">
 <a href=\"https://www.gbif.org/fr/\" target=\"_blank\">GBIF</a> (<i>Global Biodiversity Information Facility</i>) est un système mondial d’information sur la biodiversité. Les observations déposées sur iNaturalist ayant une license CC et atteignant le niveau recherche sont régulièrement versées sur GBIF. Les liens pour chaque espèce renvoient vers la page dédiée à chaque taxon. Dans bien des cas, une même espèce peut avoir plusieurs noms et ces noms peuvent être associés à différentes occurrences ou différentes photos. En général, le lien donné ici renvoie vers le nom le plus couramment utilisé pour l'espèce.
-</p><br><br>
-
-<a target=\"_blank\" href=\"https://science.mnhn.fr/\">
+</p></th>
+    </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://science.mnhn.fr\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"images/mnhn.png\"> 
-</a>
-<p class=\"desc\">
-<a href=\"\">Le Muséum National d'Histoire Naturelle (MNHN)</a> contient plusieurs spécimens d'herbier digitalisés et est très utile pour étudier les spécimens types et les espèces plus rarement rencontrées ou rapportées dans les bases de donnnées de science participative.
-</p><br><br>
-
-<a target=\"_blank\" href=\"https://tropicos.org\">
+</a></th>
+      <th><p class=\"desc\">
+<a href=\"https://science.mnhn.fr\">Le Muséum National d'Histoire Naturelle (MNHN)</a> contient plusieurs spécimens d'herbier digitalisés et est très utile pour étudier les spécimens types et les espèces plus rarement rencontrées ou rapportées dans les bases de donnnées de science participative.
+</p></th>
+    </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://tropicos.org\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"images/tropicos.png\"> 
-</a>
-<p class=\"desc\">
-<a href=\"\">Tropicos</a> est un système de données botaniques en ligne du <i>Missouri Botanical Garden</i>. Il contient de l'information sur la taxonomie, des spécimens d'herbier, etc. 
-</p><br><br>
-
-<a target=\"_blank\" href=\"https://powo.science.kew.org/\">
+</a></th>
+      <th><p class=\"desc\">
+<a href=\"https://tropicos.org\">Tropicos</a> est un système de données botaniques en ligne du <i>Missouri Botanical Garden</i>. Il contient de l'information sur la taxonomie, des spécimens d'herbier, etc.
+</p></th>
+    </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://powo.science.kew.org/\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"https://powo.science.kew.org/img/powo-favicon.ico\">
-</a>
-<p class=\"desc\">
+</a></th>
+      <th><p class=\"desc\">
 <a href=\"https://powo.science.kew.org/\" target=\"_blank\">POWO</a> (<i>Plants of the World Online</i>) est un programme du <i>Royal Botanical Garden, Kew</i> cherchant à rendre disponible l'ensemble des données numériques disponibles sur la flore mondiale. On y retrouve notamment des descriptions, des photos, des renseignements taxonomiques et des cartes de répartition pour la majorité de la flore vasculaire. Les liens pour chaque espèce renvoient vers les pages pour chaque espèce.
-</p><br><br>
-
-<a target=\"_blank\" href=\"https://floranorthamerica.org\">
+</p></th>
+    </tr>
+    <tr>
+      <th class=\"logo\"><a target=\"_blank\" href=\"https://floranorthamerica.org\">
   <img style=\"height: 8vmin; padding: 0px;\" src=\"images/fna.jpg\"> 
-</a>
-<p class=\"desc\">
-<a href=\"\"><i>Flora of North America</i></a> est une flore en ligne très utile pour l'identification des espèces lorsque celles-ci ont été rapportées en Amérique du Nord. On trouve notamment des descriptions, des illustrations et des clés d'identification.
-</p><br><br>
+</a></th>
+      <th><p class=\"desc\">
+<a href=\"https://floranorthamerica.org\"><i>Flora of North America</i></a> est une flore en ligne très utile pour l'identification des espèces lorsque celles-ci ont été rapportées en Amérique du Nord. On trouve notamment des descriptions, des illustrations et des clés d'identification.
+</p></th>
+    </tr>
+</table>
 
 
+<br>
+
+<br>
 <h2>Autres ressources</h2><br><br>
 
 <p class=\"desc\">
@@ -1339,10 +1393,10 @@ L'application <a href=\"https://mascarine.cbnm.org/\" target=\"_blank\">Masacari
 
 <p class=\"desc\">
 <a href=\"https://ausgrass2.myspecies.info/\" target=\"_blank\">AusGrass2</a>
-Site australien sur les poacées très utile pour l'identification lorsque les espèces sont aussi présentes en terrtoire australien.
+Site australien sur les poacées très utile pour l'identification lorsque les espèces sont aussi présentes en territoire australien.
 </p><br><br>
 
-<hr class=\"tophr\">
+<!-- <hr class=\"tophr\"> -->
 
 </div>
 
@@ -1425,6 +1479,7 @@ uncertain<-function(x){
   if(x=="Aristida ramosa"){return("Aristida (ramosa ?)")}
   if(x=="Chloris virgata"){return("Chloris (virgata ?)")}
   if(x=="Hordeum murinum"){return("Hordeum (murinum ?)")}
+  if(x=="Urochloa mosambicensis"){return("Urochloa (mosambicensis ?)")}
   x
 }
 
