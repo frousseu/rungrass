@@ -91,10 +91,12 @@ spnames<-unique(d[,c("sp","flore","index","other")])
 
 d$idphoto<-sapply(strsplit(sapply(strsplit(d$photo,"/original."),function(i){if(length(i)==1){NA}else{i[1]}}),"/"),tail,1)
 d$idobs<-ifelse(!is.na(d$idphoto),sapply(strsplit(d$obs,"/"),tail,1),NA)
+d$observer<-NA
   
 ### iNat credits ############################
 #w<-1:nrow(d) # get them all to verify if any attributions have changed
 w<-which(!is.na(d$idphoto) & is.na(d$attribution))#[1]
+w<-which(!is.na(d$idphoto) & (is.na(d$attribution) | d$attribution=="no rights reserved"))
 for(i in w){ # looping is better cause sometimes it times-out
   if(is.na(d$idobs[i])){
     a<-d$credit[i]
@@ -102,13 +104,16 @@ for(i in w){ # looping is better cause sometimes it times-out
     x<-fromJSON(paste0("https://api.inaturalist.org/v1/observations/",d$idobs[i]))
     m<-match(d$idphoto[i],x$results$observation_photos[[1]]$photo$id)
     a<-x$results$observation_photos[[1]]$photo$attribution[m]
+    observer<-if(is.na(x$results$user$name)){x$results$user$login}else{x$results$user$name}
   }
   d$attribution[i]<-a
+  d$observer[i]<-observer
   Sys.sleep(0.1) # not to make too many requests, but not sure it is relevant
   cat("\r",paste(match(i,w),length(w),sep=" / "))
 }
 
 d$attribution[which(is.na(d$attribution))]<-d$credit[which(is.na(d$attribution))]
+d$attribution<-ifelse(d$attribution=="no rights reserved",paste0("(c) ",d$observer,", ",d$attribution," (CC0)"),d$attribution)
 
 ### POWO links #################################
 d$powo[d$sp=="Poa borbonica"]<-"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:416623-1"
